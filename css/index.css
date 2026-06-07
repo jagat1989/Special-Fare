@@ -8,9 +8,9 @@
 /* ── CSS Custom Properties (Design Tokens) ── */
 :root {
   /* Background Colors */
-  --bg-primary: #060918;
-  --bg-secondary: #0c1029;
-  --bg-tertiary: #111640;
+  --bg-primary: #0f132e;
+  --bg-secondary: #171c42;
+  --bg-tertiary: #1f2557;
   --bg-card: rgba(255, 255, 255, 0.04);
   --bg-glass: rgba(255, 255, 255, 0.06);
   --bg-glass-hover: rgba(255, 255, 255, 0.1);
@@ -21,7 +21,7 @@
   --text-primary: #f0f4ff;
   --text-secondary: #a3b1cc;
   --text-muted: #6b7a99;
-  --text-inverse: #060918;
+  --text-inverse: #0f132e;
 
   /* Accent Colors */
   --accent-primary: #0ea5e9;

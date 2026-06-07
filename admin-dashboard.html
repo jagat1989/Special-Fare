@@ -1352,6 +1352,48 @@
             </div>
           </div>
 
+          <div class="settings-section">
+            <div class="settings-section-title">📧 Hostinger SMTP Mailer Configuration</div>
+            <div class="form-row-3" style="margin-bottom:1rem">
+              <div class="form-group">
+                <label class="form-label">SMTP Host</label>
+                <input type="text" id="settingSmtpHost" class="form-control" placeholder="smtp.hostinger.com" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">SMTP Port</label>
+                <input type="number" id="settingSmtpPort" class="form-control" placeholder="465" min="1" max="65535" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Encryption Type</label>
+                <select id="settingSmtpSecure" class="form-control">
+                  <option value="ssl">SSL (Port 465 - Recommended)</option>
+                  <option value="tls">TLS/STARTTLS (Port 587)</option>
+                  <option value="none">None (Not Recommended)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">SMTP Username (Email)</label>
+                <input type="email" id="settingSmtpUsername" class="form-control" placeholder="user@yourdomain.com" />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">SMTP Password</label>
+                <input type="password" id="settingSmtpPassword" class="form-control" placeholder="••••••••••••" />
+              </div>
+            </div>
+            <div class="form-row-2" style="margin-top:1rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Default Sender Email</label>
+                <input type="email" id="settingSmtpSenderEmail" class="form-control" placeholder="noreply@yourdomain.com" />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Default Sender Name</label>
+                <input type="text" id="settingSmtpSenderName" class="form-control" placeholder="Special Fare" />
+              </div>
+            </div>
+          </div>
+
           <div style="margin-bottom:1.5rem">
             <button type="submit" class="btn btn-primary btn-lg">
               💾 Save Settings
@@ -1643,7 +1685,7 @@
   <script src="js/data.js?v=1.1.2"></script>
   <script src="js/storage.js?v=1.1.3"></script>
   <script src="js/utils.js?v=1.1.2"></script>
-  <script src="js/admin.js?v=1.1.2"></script>
+  <script src="js/admin.js?v=1.1.3"></script>
 </body>
 </html>
 

@@ -6,7 +6,7 @@
 const Storage = (() => {
 
   const KEYS = {
-    INITIALIZED: 'specialfare_initialized_v4',
+    INITIALIZED: 'specialfare_initialized_v5',
     USERS: 'skywings_users',
     AGENTS: 'skywings_agents',
     ADMINS: 'skywings_admins',
@@ -145,7 +145,14 @@ const Storage = (() => {
       smepayEnabled: false,
       smepayMerchantId: 'SME_DEMO_MERCHANT',
       smepayApiKey: 'sme_sk_test_51N2xDemoKey',
-      smepayMode: 'sandbox'
+      smepayMode: 'sandbox',
+      smtpHost: 'smtp.hostinger.com',
+      smtpPort: 465,
+      smtpSecure: 'ssl',
+      smtpUsername: '',
+      smtpPassword: '',
+      smtpSenderEmail: '',
+      smtpSenderName: 'Special Fare'
     });
 
     _set(KEYS.ANNOUNCEMENTS, []);
@@ -837,7 +844,14 @@ const Storage = (() => {
       smepayEnabled: false,
       smepayMerchantId: "SME_DEMO_MERCHANT",
       smepayApiKey: "sme_sk_test_51N2xDemoKey",
-      smepayMode: "sandbox"
+      smepayMode: "sandbox",
+      smtpHost: "smtp.hostinger.com",
+      smtpPort: 465,
+      smtpSecure: "ssl",
+      smtpUsername: "",
+      smtpPassword: "",
+      smtpSenderEmail: "",
+      smtpSenderName: "Special Fare"
     };
     return Object.assign({}, defaults, settings);
   }

@@ -910,7 +910,14 @@ function renderSettings() {
     'settingSmepayEnabled': settings.smepayEnabled !== undefined ? String(settings.smepayEnabled) : 'false',
     'settingSmepayMode': settings.smepayMode || 'sandbox',
     'settingSmepayMerchantId': settings.smepayMerchantId || '',
-    'settingSmepayApiKey': settings.smepayApiKey || ''
+    'settingSmepayApiKey': settings.smepayApiKey || '',
+    'settingSmtpHost': settings.smtpHost || 'smtp.hostinger.com',
+    'settingSmtpPort': settings.smtpPort || 465,
+    'settingSmtpSecure': settings.smtpSecure || 'ssl',
+    'settingSmtpUsername': settings.smtpUsername || '',
+    'settingSmtpPassword': settings.smtpPassword || '',
+    'settingSmtpSenderEmail': settings.smtpSenderEmail || '',
+    'settingSmtpSenderName': settings.smtpSenderName || 'Special Fare'
   };
 
   Object.entries(fields).forEach(([id, val]) => {
@@ -947,7 +954,14 @@ function renderSettings() {
         smepayEnabled: document.getElementById('settingSmepayEnabled').value === 'true',
         smepayMode: document.getElementById('settingSmepayMode').value,
         smepayMerchantId: document.getElementById('settingSmepayMerchantId').value.trim(),
-        smepayApiKey: document.getElementById('settingSmepayApiKey').value.trim()
+        smepayApiKey: document.getElementById('settingSmepayApiKey').value.trim(),
+        smtpHost: document.getElementById('settingSmtpHost').value.trim() || 'smtp.hostinger.com',
+        smtpPort: parseInt(document.getElementById('settingSmtpPort').value) || 465,
+        smtpSecure: document.getElementById('settingSmtpSecure').value,
+        smtpUsername: document.getElementById('settingSmtpUsername').value.trim(),
+        smtpPassword: document.getElementById('settingSmtpPassword').value,
+        smtpSenderEmail: document.getElementById('settingSmtpSenderEmail').value.trim(),
+        smtpSenderName: document.getElementById('settingSmtpSenderName').value.trim() || 'Special Fare'
       };
 
       if (updates.minCommission > updates.maxCommission) {

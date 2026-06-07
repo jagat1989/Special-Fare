@@ -503,77 +503,12 @@ const FlightData = (() => {
 
   // ── Generate Flights for a Date ──
   function generateFlightsForDate(date) {
-    const flights = [];
-    const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
-    const targetDate = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysUntil = Math.max(0, Math.floor((targetDate - today) / (1000 * 60 * 60 * 24)));
-
-    SCHEDULE_TEMPLATES.forEach((template, idx) => {
-      const [origin, dest] = template.route.split('-');
-      const routeKey = `${origin}-${dest}`;
-      const routeInfo = getRouteInfo(origin, dest);
-      if (!routeInfo) return;
-
-      const airline = getAirline(template.airline);
-      if (!airline) return;
-
-      const [depH, depM] = template.departure.split(':').map(Number);
-      const departureTime = new Date(targetDate);
-      departureTime.setHours(depH, depM, 0, 0);
-
-      const arrivalTime = new Date(departureTime);
-      arrivalTime.setMinutes(arrivalTime.getMinutes() + routeInfo.duration);
-
-      // Generate prices for each class
-      const prices = {};
-      const availableSeats = {};
-
-      airline.classes.forEach(cls => {
-        prices[cls] = calculatePrice(routeInfo.basePrice, cls, daysUntil, depH);
-        // Random seat availability (50-100% of capacity)
-        const totalSeats = airline.seatConfig[cls];
-        const occupancy = 0.3 + Math.random() * 0.5;
-        availableSeats[cls] = Math.floor(totalSeats * (1 - occupancy));
-      });
-
-      const flightId = `FL_${dateStr.replace(/-/g, '')}_${template.flightNum.replace('-', '')}_${idx}`;
-
-      flights.push({
-        id: flightId,
-        flightNumber: template.flightNum,
-        airlineCode: airline.code,
-        airlineName: airline.name,
-        airlineLogo: airline.logo,
-        airlineColor: airline.color,
-        airlineRating: airline.rating,
-        origin: origin,
-        destination: dest,
-        originAirport: getAirport(origin),
-        destinationAirport: getAirport(dest),
-        date: dateStr,
-        departureTime: `${String(depH).padStart(2, '0')}:${String(depM).padStart(2, '0')}`,
-        arrivalTime: `${String(arrivalTime.getHours()).padStart(2, '0')}:${String(arrivalTime.getMinutes()).padStart(2, '0')}`,
-        duration: routeInfo.duration,
-        distance: routeInfo.distance,
-        stops: 0,
-        stopText: 'Non-stop',
-        prices: prices,
-        availableSeats: availableSeats,
-        classes: airline.classes,
-        aircraft: 'A320',
-        status: 'scheduled'
-      });
-    });
-
-    return flights;
+    return [];
   }
 
   // ── Search Flights ──
   function searchFlights(origin, destination, date) {
-    const allFlights = generateFlightsForDate(date);
-    return allFlights.filter(f => f.origin === origin && f.destination === destination);
+    return [];
   }
 
   // ── Get Popular Routes ──

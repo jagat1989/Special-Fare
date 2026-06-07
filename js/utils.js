@@ -628,6 +628,13 @@ const Utils = (() => {
           var e = a.responseText;
           if (t) t(e);
         };
+        a.onerror = function () {
+          if (t) t("Error: Network or CORS error occurred. The SmtpJS API request was blocked or could not be reached.");
+        };
+        a.ontimeout = function () {
+          if (t) t("Error: Request timed out. The SMTP server or SmtpJS relay did not respond in time.");
+        };
+        a.timeout = 15000; // 15 seconds timeout
         a.send(n);
       } else {
         if (t) t("Error: CORS request not supported");

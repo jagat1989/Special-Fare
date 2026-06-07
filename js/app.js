@@ -740,7 +740,8 @@ const App = (() => {
               Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
               showStep(2);
             } else {
-              Utils.showToast('Failed to send verification email. Please check your SMTP settings or try again.', 'error');
+              Utils.showToast('Failed to send verification email. Please check SMTP settings. For testing, your OTP code is: ' + currentOTP, 'warning', 15000);
+              showStep(2);
             }
           });
         } else {

@@ -644,6 +644,7 @@ const Utils = (() => {
 
       const emailConfig = {
         Host: settings.smtpHost || 'smtp.hostinger.com',
+        Port: settings.smtpPort || 465,
         Username: settings.smtpUsername,
         Password: settings.smtpPassword,
         To: to,

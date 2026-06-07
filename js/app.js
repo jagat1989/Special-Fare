@@ -611,7 +611,7 @@ const App = (() => {
     const modalTitle = document.querySelector('#customer-login-modal .modal-title');
 
     let forgotEmail = '';
-    const simulatedOTP = '123456';
+    let currentOTP = '123456';
 
     function showStep(stepNum) {
       step1.style.display = stepNum === 1 ? 'block' : 'none';
@@ -698,10 +698,45 @@ const App = (() => {
         sendBtn.disabled = true;
         sendBtn.innerHTML = '⏳ Sending OTP...';
 
+        // Generate dynamic 6-digit OTP
+        currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        const settings = Storage.getSettings();
+        const hasSmtp = settings.smtpUsername && settings.smtpPassword;
+
         setTimeout(() => {
           sendBtn.disabled = false;
           sendBtn.innerHTML = 'Send OTP Code →';
-          Utils.showToast('Simulation OTP code: ' + simulatedOTP, 'info', 8000);
+
+          if (hasSmtp) {
+            Utils.sendEmail({
+              to: email,
+              subject: 'One-Time Password (OTP) for Password Reset - Special Fare',
+              body: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                  <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                    <h2 style="margin: 0; font-size: 24px;">Password Reset Verification</h2>
+                  </div>
+                  <div style="padding: 24px; color: #333; line-height: 1.6;">
+                    <p>Dear Customer,</p>
+                    <p>We received a request to reset the password for your Special Fare customer account.</p>
+                    <p>Your One-Time Password (OTP) code is:</p>
+                    <div style="text-align: center; margin: 20px 0;">
+                      <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2563eb; background: #f3f4f6; padding: 10px 20px; border-radius: 6px; display: inline-block;">${currentOTP}</span>
+                    </div>
+                    <p>This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
+                    <p>Best regards,<br>Special Fare Team</p>
+                  </div>
+                  <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                    © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                    For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+                  </div>
+                </div>
+              `
+            });
+            Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
+          } else {
+            Utils.showToast('SMTP Mailer is not configured. Simulation OTP code: ' + currentOTP, 'warning', 10000);
+          }
           showStep(2);
         }, 800);
       });
@@ -715,8 +750,8 @@ const App = (() => {
           Utils.showToast('Please enter the verification code', 'warning');
           return;
         }
-        if (otp !== simulatedOTP) {
-          Utils.showToast('Incorrect verification code. Hint: ' + simulatedOTP, 'error');
+        if (otp !== currentOTP) {
+          Utils.showToast('Incorrect verification code. Hint: ' + currentOTP, 'error');
           return;
         }
 

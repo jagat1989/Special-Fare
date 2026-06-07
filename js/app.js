@@ -573,7 +573,7 @@ const App = (() => {
         sessionPageLink.href = 'supplier-dashboard.html';
       } else {
         sessionPageLink.textContent = `👤 ${session.name || 'My Account'}`;
-        sessionPageLink.href = '#';
+        sessionPageLink.href = 'customer-dashboard.html';
       }
 
       // Replace login button with user greeting + logout

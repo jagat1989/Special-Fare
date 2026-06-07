@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Dashboard — Special Fare</title>
+  <link rel="stylesheet" href="css/index.css?v=1.1.3" />
+  <style>
+    /* ── Dashboard Layout ── */
+    body { overflow-x: hidden; }
+    .customer-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(6, 9, 24, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .customer-navbar .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.3rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-customer-badge {
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      color: var(--accent-primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .nav-customer-name {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    .nav-customer-name strong { color: var(--text-primary); }
+    
+    /* ── Layout Wrapper ── */
+    .dashboard-wrap {
+      display: flex;
+      min-height: calc(100vh - 64px);
+    }
+    .customer-sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: rgba(12, 16, 41, 0.9);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0.75rem;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .sidebar-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 0.75rem 0.75rem 0.25rem;
+      margin-top: 0.25rem;
+    }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+    .sidebar-nav-item:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-primary);
+    }
+    .sidebar-nav-item.active {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: rgba(14, 165, 233, 0.3);
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+    .sidebar-nav-item .nav-icon { font-size: 1.1rem; width: 1.3rem; text-align: center; }
+    
+    /* ── Main Content ── */
+    .dashboard-main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      min-width: 0;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* ── Page Header ── */
+    .panel-header {
+      margin-bottom: 2rem;
+    }
+    .panel-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .panel-header p { color: var(--text-muted); font-size: 0.875rem; }
+    
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.skyblue { background: rgba(14, 165, 233, 0.2); color: var(--accent-primary); }
+    .stat-icon.green { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .stat-info { min-width: 0; }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.2;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+    
+    /* ── Table Styling ── */
+    .table-wrapper {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-header h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th {
+      background: rgba(255,255,255,0.04);
+      padding: 0.7rem 1rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+    .table tbody tr:hover td { background: rgba(255,255,255,0.025); }
+    .table tbody tr:last-child td { border-bottom: none; }
+    .pnr-code {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+      background: rgba(14, 165, 233, 0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+    
+    /* ── Form Controls ── */
+    .form-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 650px;
+      backdrop-filter: blur(12px);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .customer-sidebar { display: none; }
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-control {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--accent-primary);
+      background: var(--bg-input-focus);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+    }
+    
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-success { background: rgba(34,197,94,0.12); color: #22c55e; }
+    .badge-warning { background: rgba(245,158,11,0.12); color: #f59e0b; }
+    .badge-danger { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .badge-info { background: rgba(6,182,212,0.12); color: #06b6d4; }
+    
+    /* ── Empty State ── */
+    .empty-state {
+      text-align: center;
+      padding: 3.5rem 2rem;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h3 { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    
+    /* ── Filter Bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+      align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent-primary); }
+
+    /* ── Modals ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2rem;
+      max-width: 460px;
+      width: 90%;
+      position: relative;
+      animation: scaleIn 0.25s ease;
+    }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 0.2rem; }
+    .modal-close:hover { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="customer-navbar">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="index.html" class="nav-brand" style="text-decoration:none;">✈ Special Fare</a>
+      <span class="nav-customer-badge">Customer Portal</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-customer-name">Welcome, <strong id="customerDisplayName">Customer</strong></div>
+      <button class="btn btn-secondary btn-sm" onclick="handleLogout()">🚪 Logout</button>
+    </div>
+  </nav>
+
+  <!-- ── Dashboard Wrapper ── -->
+  <div class="dashboard-wrap">
+
+    <!-- ── Sidebar ── -->
+    <aside class="customer-sidebar">
+      <div class="sidebar-section-label">Main Menu</div>
+      <div class="sidebar-nav-item active" data-tab="overview" onclick="switchTab('overview')">
+        <span class="nav-icon">📊</span> Overview
+      </div>
+      <a href="index.html" class="sidebar-nav-item" style="text-decoration:none;">
+        <span class="nav-icon">🛫</span> Book Flights
+      </a>
+
+      <div class="sidebar-section-label">Bookings</div>
+      <div class="sidebar-nav-item" data-tab="bookings" onclick="switchTab('bookings')">
+        <span class="nav-icon">📋</span> My Bookings
+      </div>
+
+      <div class="sidebar-section-label">Account</div>
+      <div class="sidebar-nav-item" data-tab="profile" onclick="switchTab('profile')">
+        <span class="nav-icon">👤</span> Profile Settings
+      </div>
+    </aside>
+
+    <!-- ── Main Dashboard Panel ── -->
+    <main class="dashboard-main">
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- OVERVIEW PANEL                        -->
+      <!-- ══════════════════════════════════════ -->
+      <div class="panel active" id="panel-overview">
+        <div class="panel-header">
+          <h1>📊 Overview</h1>
+          <p>Welcome to your flight booking panel</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon skyblue">🛫</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-total-bookings">0</div>
+              <div class="stat-label">Total Bookings</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📅</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-active-bookings">0</div>
+              <div class="stat-label">Upcoming / Active Flights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <div class="table-header">
+            <h3>📋 Recent Bookings</h3>
+            <a href="index.html" class="btn btn-primary btn-sm" style="text-decoration:none; padding: 0.5rem 1rem; line-height:1.2;">🛫 Book New Flight</a>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>PNR</th>
+                  <th>Route</th>
+                  <th>Date</th>
+                  <th>Cabin Class</th>
+                  <th>Passengers</th>
+                  <th>Total Paid</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recent-bookings-tbody">
+                <tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">No bookings found</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- MY BOOKINGS PANEL                     -->
+      <!-- ══════════════════════════════════════ -->
+      <div class="panel" id="panel-bookings">
+        <div class="panel-header">
+          <h1>📋 My Bookings</h1>
+          <p>View your past bookings, print e-tickets, or request cancellations</p>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" id="search-pnr" placeholder="🔍 Search PNR, Route..." oninput="filterBookings()" />
+          <select id="filter-status" onchange="filterBookings()">
+            <option value="">All Statuses</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <input type="date" id="filter-date" onchange="filterBookings()" />
+          <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Clear</button>
+        </div>
+
+        <div class="table-wrapper">
+          <div style="overflow-x:auto;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>PNR</th>
+                  <th>Flight</th>
+                  <th>Route</th>
+                  <th>Travel Date</th>
+                  <th>Cabin Class</th>
+                  <th>Passengers</th>
+                  <th>Total Paid</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-tbody">
+                <tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-muted);">No bookings found</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════ -->
+      <!-- PROFILE PANEL                         -->
+      <!-- ══════════════════════════════════════ -->
+      <div class="panel" id="panel-profile">
+        <div class="panel-header">
+          <h1>👤 Profile Settings</h1>
+          <p>Manage your account credentials and personal details</p>
+        </div>
+
+        <div class="form-card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="prof-name">Full Name</label>
+              <input type="text" id="prof-name" class="form-control" placeholder="Enter full name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prof-phone">Phone Number</label>
+              <input type="text" id="prof-phone" class="form-control" placeholder="Enter 10-digit number" />
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label" for="prof-email">Email Address</label>
+              <input type="email" id="prof-email" class="form-control" placeholder="Enter email address" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prof-pass">New Password</label>
+              <input type="password" id="prof-pass" class="form-control" placeholder="Leave blank to keep current" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prof-confirm">Confirm Password</label>
+              <input type="password" id="prof-confirm" class="form-control" placeholder="Confirm new password" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()" style="min-width:140px;">💾 Save Changes</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── Cancel Booking Modal ── -->
+  <div class="modal-overlay" id="cancelModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🚨 Cancel Booking</h3>
+        <button class="modal-close" onclick="Utils.closeModal('cancelModal')">✕</button>
+      </div>
+      <p style="color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.9rem; line-height:1.5;">
+        Are you sure you want to cancel booking PNR <strong id="cancelPNRDisplay" class="pnr-code"></strong>? This action cannot be undone.
+      </p>
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button class="btn btn-secondary btn-sm" onclick="Utils.closeModal('cancelModal')">No, Keep It</button>
+        <button class="btn btn-sm" style="background:#ef4444; color:#fff;" onclick="confirmCancelBooking()">Yes, Cancel Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ── Scripts ── -->
+  <script src="js/data.js?v=1.1.2"></script>
+  <script src="js/storage.js?v=1.1.3"></script>
+  <script src="js/utils.js?v=1.1.2"></script>
+  <script src="js/customer.js?v=1.1.0"></script>
+</body>
+</html>

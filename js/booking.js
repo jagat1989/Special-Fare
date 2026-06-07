@@ -87,7 +87,7 @@ const BookingFlow = (() => {
     if (!area) return;
     if (session) {
       let role = '👤 User';
-      let dashboardUrl = '#';
+      let dashboardUrl = 'customer-dashboard.html';
       if (session.role === 'admin') {
         role = '🛡️ Admin';
         dashboardUrl = 'admin-dashboard.html';

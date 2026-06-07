@@ -74,7 +74,7 @@
     if (!el) return;
     if (agentSession) {
       let role = '👤 User';
-      let dashboardUrl = '#';
+      let dashboardUrl = 'customer-dashboard.html';
       if (agentSession.role === 'admin') {
         role = '🛡️ Admin';
         dashboardUrl = 'admin-dashboard.html';

@@ -331,6 +331,41 @@ const Storage = (() => {
     return users.find(u => u.id === userId) || null;
   }
 
+  function updateCustomerProfile(userId, data) {
+    const users = _get(KEYS.USERS) || [];
+    const index = users.findIndex(u => u.id === userId);
+    if (index === -1) {
+      return { success: false, error: 'User not found.' };
+    }
+    
+    // Check if email is being changed and is already taken
+    if (data.email !== users[index].email) {
+      const emailTaken = users.some((u, i) => i !== index && u.email === data.email);
+      if (emailTaken) {
+        return { success: false, error: 'Email already registered.' };
+      }
+    }
+    
+    users[index].name = data.name;
+    users[index].email = data.email;
+    users[index].phone = data.phone;
+    if (data.password) {
+      users[index].password = data.password;
+    }
+    
+    _set(KEYS.USERS, users);
+    
+    // Update session too
+    const session = _get(KEYS.SESSION);
+    if (session && session.userId === userId) {
+      session.name = data.name;
+      session.email = data.email;
+      _set(KEYS.SESSION, session);
+    }
+    
+    return { success: true, user: users[index] };
+  }
+
   // ═══════════════════════════════════════
   // BOOKING MANAGEMENT
   // ═══════════════════════════════════════
@@ -1068,6 +1103,7 @@ const Storage = (() => {
     getAllAgents,
     getAgent,
     getCustomer,
+    updateCustomerProfile,
     updateAgentStatus,
     updateAgentCommission,
     // Bookings

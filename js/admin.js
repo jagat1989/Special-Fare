@@ -830,8 +830,6 @@ function renderCustomize() {
   // Populate form fields
   const fields = {
     'customPromoText': settings.promoText || '',
-    'customHeroTitle': settings.heroTitle || '',
-    'customHeroSubtitle': settings.heroSubtitle || '',
     'customStatAirports': settings.statAirports || '',
     'customStatAirlines': settings.statAirlines || '',
     'customStatFlights': settings.statDailyFlights || '',
@@ -867,8 +865,6 @@ function renderCustomize() {
       e.preventDefault();
       const updates = {
         promoText: document.getElementById('customPromoText').value.trim(),
-        heroTitle: document.getElementById('customHeroTitle').value.trim(),
-        heroSubtitle: document.getElementById('customHeroSubtitle').value.trim(),
         statAirports: parseInt(document.getElementById('customStatAirports').value) || 0,
         statAirlines: parseInt(document.getElementById('customStatAirlines').value) || 0,
         statDailyFlights: parseInt(document.getElementById('customStatFlights').value) || 0,

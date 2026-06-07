@@ -860,17 +860,7 @@ const App = (() => {
       announceBar.innerHTML = settings.promoText;
     }
 
-    // 2. Hero Title
-    const heroTitle = document.querySelector('.hero-title');
-    if (heroTitle && settings.heroTitle) {
-      heroTitle.innerHTML = settings.heroTitle;
-    }
 
-    // 3. Hero Subtitle
-    const heroSubtitle = document.querySelector('.hero-subtitle');
-    if (heroSubtitle && settings.heroSubtitle) {
-      heroSubtitle.textContent = settings.heroSubtitle;
-    }
 
     // 4. Footer Copyright / Details
     const footerCopyright = document.getElementById('footer-copyright');

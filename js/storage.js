@@ -812,8 +812,6 @@ const Storage = (() => {
   function getSettings() {
     const settings = _get(KEYS.SETTINGS) || {};
     const defaults = {
-      heroTitle: "India's Most Trusted<br><span class=\"text-gradient\">Flight Search Engine</span>",
-      heroSubtitle: "Search, compare, and book flights across 28 Indian airports with a fully self-managed inventory of 6 major airlines. Real-time pricing, instant confirmations, and zero hidden charges.",
       promoCode: "SPECIALFARE500",
       promoText: "🎉 <strong>Special Offer:</strong> Get flat ₹500 off on your first booking! Use code <strong>SPECIALFARE500</strong> &nbsp;|&nbsp; 🔒 Secure Payments &nbsp;|&nbsp; ✈ Real-time Availability",
       statAirports: 28,

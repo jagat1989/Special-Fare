@@ -587,6 +587,26 @@ const Utils = (() => {
       total
     };
   }
+  // ── WhatsApp Chat Widget ──
+  function initWhatsAppWidget() {
+    const widget = document.getElementById('whatsappWidget');
+    const link = document.getElementById('whatsappLink');
+    if (!widget || !link) return;
+
+    try {
+      const settings = Storage.getSettings();
+      if (settings.whatsappEnabled && settings.whatsappNumber) {
+        const number = settings.whatsappNumber.replace(/[^0-9]/g, '');
+        const msg = encodeURIComponent(settings.whatsappMessage || '');
+        link.href = `https://wa.me/${number}${msg ? '?text=' + msg : ''}`;
+        widget.style.display = 'flex';
+      } else {
+        widget.style.display = 'none';
+      }
+    } catch (e) {
+      widget.style.display = 'none';
+    }
+  }
 
   // ── Public API ──
   return {
@@ -635,7 +655,8 @@ const Utils = (() => {
     printTicket,
     copyToClipboard,
     requireSession,
-    calculateFareSummary
+    calculateFareSummary,
+    initWhatsAppWidget
   };
 
 })();

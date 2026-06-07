@@ -1799,14 +1799,23 @@
     <div style="color:var(--text-muted);font-size:0.85rem">Please do not close this window</div>
   </div>
 
+  <!-- ── WhatsApp Chat Widget ── -->
+  <div class="whatsapp-widget" id="whatsappWidget" style="display:none">
+    <div class="whatsapp-tooltip">Chat with us</div>
+    <a id="whatsappLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16.004 2.667A13.26 13.26 0 0 0 2.69 15.923a13.16 13.16 0 0 0 1.795 6.633L2.667 29.333l7.013-1.783a13.3 13.3 0 0 0 6.324 1.6h.005A13.27 13.27 0 0 0 29.333 15.93 13.27 13.27 0 0 0 16.004 2.667Zm0 24.27a11.02 11.02 0 0 1-5.613-1.536l-.403-.239-4.177 1.063 1.114-3.96-.264-.42a10.93 10.93 0 0 1-1.692-5.845A11.01 11.01 0 0 1 16.004 4.94 11.01 11.01 0 0 1 27.06 15.93a11.02 11.02 0 0 1-11.056 11.007Zm6.045-8.253c-.332-.166-1.964-.969-2.268-1.08-.305-.11-.527-.166-.748.166-.222.332-.858 1.08-1.052 1.302-.194.221-.388.249-.72.083-.332-.166-1.4-.516-2.668-1.645-.986-.879-1.652-1.964-1.846-2.296-.194-.332-.021-.512.146-.677.15-.149.332-.388.498-.582.166-.194.221-.332.332-.554.111-.222.056-.416-.028-.582-.083-.166-.748-1.803-1.025-2.468-.27-.648-.545-.56-.748-.571l-.637-.01a1.22 1.22 0 0 0-.886.416c-.305.332-1.163 1.136-1.163 2.772s1.19 3.215 1.357 3.437c.166.222 2.343 3.575 5.677 5.014.793.342 1.412.547 1.895.7.796.253 1.521.217 2.094.131.639-.095 1.964-.803 2.24-1.578.277-.776.277-1.44.194-1.578-.083-.139-.305-.222-.637-.388Z"/></svg>
+    </a>
+  </div>
+
   <!-- ── Toast Container ── -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- ── Scripts ── -->
   <script src="js/data.js?v=1.1.2"></script>
   <script src="js/storage.js?v=1.1.3"></script>
-  <script src="js/utils.js?v=1.1.2"></script>
+  <script src="js/utils.js?v=1.1.3"></script>
   <script src="js/booking.js?v=1.1.3"></script>
+  <script>Utils.initWhatsAppWidget();</script>
 </body>
 </html>
 

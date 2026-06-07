@@ -152,7 +152,10 @@ const Storage = (() => {
       smtpUsername: '',
       smtpPassword: '',
       smtpSenderEmail: '',
-      smtpSenderName: 'Special Fare'
+      smtpSenderName: 'Special Fare',
+      whatsappEnabled: true,
+      whatsappNumber: '',
+      whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.'
     });
 
     _set(KEYS.ANNOUNCEMENTS, []);
@@ -851,7 +854,10 @@ const Storage = (() => {
       smtpUsername: "",
       smtpPassword: "",
       smtpSenderEmail: "",
-      smtpSenderName: "Special Fare"
+      smtpSenderName: "Special Fare",
+      whatsappEnabled: true,
+      whatsappNumber: "",
+      whatsappMessage: "Hi! I need help with a flight booking on Special Fare."
     };
     return Object.assign({}, defaults, settings);
   }

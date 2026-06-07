@@ -917,7 +917,10 @@ function renderSettings() {
     'settingSmtpUsername': settings.smtpUsername || '',
     'settingSmtpPassword': settings.smtpPassword || '',
     'settingSmtpSenderEmail': settings.smtpSenderEmail || '',
-    'settingSmtpSenderName': settings.smtpSenderName || 'Special Fare'
+    'settingSmtpSenderName': settings.smtpSenderName || 'Special Fare',
+    'settingWhatsappEnabled': settings.whatsappEnabled !== undefined ? String(settings.whatsappEnabled) : 'true',
+    'settingWhatsappNumber': settings.whatsappNumber || '',
+    'settingWhatsappMessage': settings.whatsappMessage || 'Hi! I need help with a flight booking on Special Fare.'
   };
 
   Object.entries(fields).forEach(([id, val]) => {
@@ -961,7 +964,10 @@ function renderSettings() {
         smtpUsername: document.getElementById('settingSmtpUsername').value.trim(),
         smtpPassword: document.getElementById('settingSmtpPassword').value,
         smtpSenderEmail: document.getElementById('settingSmtpSenderEmail').value.trim(),
-        smtpSenderName: document.getElementById('settingSmtpSenderName').value.trim() || 'Special Fare'
+        smtpSenderName: document.getElementById('settingSmtpSenderName').value.trim() || 'Special Fare',
+        whatsappEnabled: document.getElementById('settingWhatsappEnabled').value === 'true',
+        whatsappNumber: document.getElementById('settingWhatsappNumber').value.trim(),
+        whatsappMessage: document.getElementById('settingWhatsappMessage').value.trim()
       };
 
       if (updates.minCommission > updates.maxCommission) {

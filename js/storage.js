@@ -184,16 +184,17 @@ const Storage = (() => {
 
   function login(email, password, role) {
     let users;
+    const cleanEmail = (email || '').trim().toLowerCase();
     if (role === 'admin') {
       users = _get(KEYS.ADMINS) || [];
-      const admin = users.find(u => u.username === email && u.password === password);
+      const admin = users.find(u => (u.username || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (admin) {
         _set(KEYS.SESSION, { userId: admin.id, role: 'admin', name: admin.name, email: admin.username });
         return { success: true, user: admin };
       }
     } else if (role === 'agent') {
       users = _get(KEYS.AGENTS) || [];
-      const agent = users.find(u => u.email === email && u.password === password);
+      const agent = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (agent) {
         if (agent.status !== 'approved') {
           return { success: false, error: `Your account is ${agent.status}. Please wait for admin approval.` };
@@ -203,7 +204,7 @@ const Storage = (() => {
       }
     } else if (role === 'supplier') {
       users = _get(KEYS.SUPPLIERS) || [];
-      const supplier = users.find(u => u.email === email && u.password === password);
+      const supplier = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (supplier) {
         if (supplier.status && supplier.status !== 'active') {
           return { success: false, error: `Your account is ${supplier.status}. Contact administrator support.` };
@@ -213,7 +214,7 @@ const Storage = (() => {
       }
     } else {
       users = _get(KEYS.USERS) || [];
-      const user = users.find(u => u.email === email && u.password === password);
+      const user = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (user) {
         _set(KEYS.SESSION, { userId: user.id, role: 'customer', name: user.name, email: user.email });
         return { success: true, user };
@@ -1074,8 +1075,12 @@ const Storage = (() => {
       key = KEYS.USERS;
     }
 
+    const cleanEmail = (email || '').trim().toLowerCase();
     const list = _get(key) || [];
-    return list.some(u => (role === 'admin' ? u.username : u.email) === email);
+    return list.some(u => {
+      const storedVal = role === 'admin' ? u.username : u.email;
+      return (storedVal || '').trim().toLowerCase() === cleanEmail;
+    });
   }
 
   function resetUserPassword(email, role, newPassword) {
@@ -1090,8 +1095,12 @@ const Storage = (() => {
       key = KEYS.USERS;
     }
 
+    const cleanEmail = (email || '').trim().toLowerCase();
     const list = _get(key) || [];
-    const idx = list.findIndex(u => (role === 'admin' ? u.username : u.email) === email);
+    const idx = list.findIndex(u => {
+      const storedVal = role === 'admin' ? u.username : u.email;
+      return (storedVal || '').trim().toLowerCase() === cleanEmail;
+    });
     if (idx === -1) return { success: false, error: 'Email address not found.' };
 
     list[idx].password = newPassword;

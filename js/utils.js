@@ -636,11 +636,19 @@ const Utils = (() => {
 
       if (!window.Email) {
         console.error('SmtpJS Email library is not available.');
+        Utils.showToast('SmtpJS Email library is not available.', 'error', 8000);
         return false;
       }
 
-      const fromEmail = settings.smtpSenderEmail || settings.smtpUsername || 'info@specialfare.in';
-      const fromName = settings.smtpSenderName || 'Special Fare';
+      // Extract raw email address if name-formatted (e.g. "Special Fare <info@specialfare.in>" -> "info@specialfare.in")
+      let fromEmail = settings.smtpSenderEmail || settings.smtpUsername || 'info@specialfare.in';
+      const emailRegex = /<([^>]+)>/;
+      const match = fromEmail.match(emailRegex);
+      if (match) {
+        fromEmail = match[1].trim();
+      } else {
+        fromEmail = fromEmail.trim();
+      }
 
       const emailConfig = {
         Host: settings.smtpHost || 'smtp.hostinger.com',
@@ -648,7 +656,7 @@ const Utils = (() => {
         Username: settings.smtpUsername,
         Password: settings.smtpPassword,
         To: to,
-        From: `${fromName} <${fromEmail}>`,
+        From: fromEmail,
         Subject: subject,
         Body: body
       };
@@ -656,9 +664,15 @@ const Utils = (() => {
       console.log(`Sending email to ${to} via SMTP...`);
       const response = await window.Email.send(emailConfig);
       console.log('SmtpJS Response:', response);
-      return response === 'OK';
+
+      if (response !== 'OK') {
+        Utils.showToast(`Email delivery failed: ${response}`, 'error', 8000);
+        return false;
+      }
+      return true;
     } catch (error) {
       console.error('Error sending email:', error);
+      Utils.showToast(`Error sending email: ${error.message || error}`, 'error', 8000);
       return false;
     }
   }

@@ -703,42 +703,53 @@ const App = (() => {
         const settings = Storage.getSettings();
         const hasSmtp = settings.smtpUsername && settings.smtpPassword;
 
-        setTimeout(() => {
+        const step2Text = document.querySelector('#cust-forgot-step2 p');
+
+        if (hasSmtp) {
+          if (step2Text) step2Text.textContent = 'Enter the 6-digit verification code sent to your email address.';
+          Utils.showLoading('Sending verification code...');
+          Utils.sendEmail({
+            to: email,
+            subject: 'One-Time Password (OTP) for Password Reset - Special Fare',
+            body: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 24px;">Password Reset Verification</h2>
+                </div>
+                <div style="padding: 24px; color: #333; line-height: 1.6;">
+                  <p>Dear Customer,</p>
+                  <p>We received a request to reset the password for your Special Fare customer account.</p>
+                  <p>Your One-Time Password (OTP) code is:</p>
+                  <div style="text-align: center; margin: 20px 0;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2563eb; background: #f3f4f6; padding: 10px 20px; border-radius: 6px; display: inline-block;">${currentOTP}</span>
+                  </div>
+                  <p>This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
+                  <p>Best regards,<br>Special Fare Team</p>
+                </div>
+                <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                  © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                  For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+                </div>
+              </div>
+            `
+          }).then(success => {
+            Utils.hideLoading();
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = 'Send OTP Code →';
+            if (success) {
+              Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
+              showStep(2);
+            } else {
+              Utils.showToast('Failed to send verification email. Please check your SMTP settings or try again.', 'error');
+            }
+          });
+        } else {
+          if (step2Text) step2Text.textContent = 'A simulated 6-digit OTP code has been generated. Please enter it below.';
           sendBtn.disabled = false;
           sendBtn.innerHTML = 'Send OTP Code →';
-
-          if (hasSmtp) {
-            Utils.sendEmail({
-              to: email,
-              subject: 'One-Time Password (OTP) for Password Reset - Special Fare',
-              body: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                  <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
-                    <h2 style="margin: 0; font-size: 24px;">Password Reset Verification</h2>
-                  </div>
-                  <div style="padding: 24px; color: #333; line-height: 1.6;">
-                    <p>Dear Customer,</p>
-                    <p>We received a request to reset the password for your Special Fare customer account.</p>
-                    <p>Your One-Time Password (OTP) code is:</p>
-                    <div style="text-align: center; margin: 20px 0;">
-                      <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2563eb; background: #f3f4f6; padding: 10px 20px; border-radius: 6px; display: inline-block;">${currentOTP}</span>
-                    </div>
-                    <p>This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
-                    <p>Best regards,<br>Special Fare Team</p>
-                  </div>
-                  <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
-                    © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
-                    For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
-                  </div>
-                </div>
-              `
-            });
-            Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
-          } else {
-            Utils.showToast('SMTP Mailer is not configured. Simulation OTP code: ' + currentOTP, 'warning', 10000);
-          }
+          Utils.showToast('SMTP Mailer is not configured. Simulation OTP code: ' + currentOTP, 'warning', 10000);
           showStep(2);
-        }, 800);
+        }
       });
     }
 

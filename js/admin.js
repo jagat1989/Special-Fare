@@ -648,10 +648,16 @@ function renderCustomers() {
         <td style="color:var(--accent-primary);font-weight:600">${Utils.formatCurrency(totalSpent)}</td>
         <td style="font-size:0.82rem;color:var(--text-muted)">${Utils.formatDate(customer.createdAt)}</td>
         <td>
-          <button class="btn btn-sm" onclick="impersonate('${customer.id}', 'customer')"
-            style="background:rgba(14, 165, 233,0.15);color:#a5b4fc;border:1px solid rgba(14, 165, 233,0.3);padding:4px 10px;font-size:0.78rem">
-            🔑 Login As
-          </button>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="impersonate('${customer.id}', 'customer')"
+              style="background:rgba(14, 165, 233,0.15);color:#a5b4fc;border:1px solid rgba(14, 165, 233,0.3);padding:4px 10px;font-size:0.78rem">
+              🔑 Login As
+            </button>
+            <button class="btn btn-sm" onclick="openResetPasswordModal('${customer.id}', 'customer')"
+              style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);padding:4px 10px;font-size:0.78rem">
+              🔑 Reset Pass
+            </button>
+          </div>
         </td>
       </tr>
     `;
@@ -745,6 +751,10 @@ function renderAgents() {
             <button class="btn btn-sm" onclick="openWalletModal('${agent.id}')"
               style="background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);padding:4px 10px;font-size:0.78rem">
               💰 Wallet
+            </button>
+            <button class="btn btn-sm" onclick="openResetPasswordModal('${agent.id}', 'agent')"
+              style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);padding:4px 10px;font-size:0.78rem">
+              🔑 Reset Pass
             </button>
           </div>
         </td>
@@ -1308,9 +1318,11 @@ function renderSuppliersTable() {
         </td>
         <td>${statusBadge}</td>
         <td>
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(14, 165, 233,0.15); color:#a5b4fc; border:1px solid rgba(14, 165, 233,0.3);"
               onclick="impersonate('${s.id}', 'supplier')">🔑 Login As</button>
+            <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3);"
+              onclick="openResetPasswordModal('${s.id}', 'supplier')">🔑 Reset Pass</button>
             <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(6,182,212,0.15); color:#67e8f9; border:1px solid rgba(6,182,212,0.3);"
               onclick="openEditSupplierModal('${s.id}')">✏️ Edit</button>
             <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; ${toggleBtnClass}"
@@ -1630,6 +1642,114 @@ function initWalletAdjustForm() {
   });
 }
 
+// ── Reset Password ──
+function openResetPasswordModal(id, role) {
+  let user;
+  if (role === 'customer') {
+    const list = Storage.getAllCustomers();
+    user = list.find(u => u.id === id);
+  } else if (role === 'agent') {
+    user = Storage.getAgent(id);
+  } else if (role === 'supplier') {
+    const list = Storage.getSuppliers();
+    user = list.find(u => u.id === id);
+  }
+
+  if (!user) {
+    Utils.showToast('User not found.', 'error');
+    return;
+  }
+
+  document.getElementById('resetPassTargetId').value = id;
+  document.getElementById('resetPassTargetRole').value = role;
+
+  const emailVal = role === 'customer' || role === 'supplier' ? user.email : user.email;
+  const nameVal = role === 'customer' ? user.name : (role === 'agent' ? user.agencyName + ' (' + user.ownerName + ')' : user.name);
+
+  document.getElementById('resetPassTargetEmail').value = emailVal;
+  document.getElementById('resetPassTargetName').textContent = nameVal;
+  document.getElementById('resetPassTargetEmailText').textContent = emailVal;
+  document.getElementById('resetPassTargetRoleText').textContent = role;
+
+  const pwdInput = document.getElementById('resetPassNewPassword');
+  if (pwdInput) {
+    pwdInput.value = '';
+    pwdInput.type = 'password';
+  }
+  const toggleBtn = document.getElementById('toggleResetPassPwd');
+  if (toggleBtn) toggleBtn.textContent = '👁️';
+  Utils.clearFieldError('resetPassNewPassword');
+
+  Utils.openModal('adminResetPasswordModal');
+}
+
+function initResetPasswordForm() {
+  const form = document.getElementById('adminResetPasswordForm');
+  if (form && !form.dataset.initialized) {
+    form.dataset.initialized = 'true';
+
+    // Show/Hide password toggle
+    const toggleBtn = document.getElementById('toggleResetPassPwd');
+    const pwdInput = document.getElementById('resetPassNewPassword');
+    if (toggleBtn && pwdInput) {
+      toggleBtn.addEventListener('click', () => {
+        if (pwdInput.type === 'password') {
+          pwdInput.type = 'text';
+          toggleBtn.textContent = '🙈';
+        } else {
+          pwdInput.type = 'password';
+          toggleBtn.textContent = '👁️';
+        }
+      });
+    }
+
+    // Generate random password
+    const genBtn = document.getElementById('generateRandomPassBtn');
+    if (genBtn && pwdInput) {
+      genBtn.addEventListener('click', () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        let pass = '';
+        for (let i = 0; i < 10; i++) {
+          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        pwdInput.value = pass;
+        pwdInput.type = 'text';
+        if (toggleBtn) toggleBtn.textContent = '🙈';
+        Utils.showToast('Random password generated!', 'info');
+      });
+    }
+
+    // Form submit
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('resetPassTargetId').value;
+      const role = document.getElementById('resetPassTargetRole').value;
+      const email = document.getElementById('resetPassTargetEmail').value;
+      const newPassword = pwdInput.value;
+
+      Utils.clearFieldError('resetPassNewPassword');
+
+      if (!newPassword || newPassword.length < 6) {
+        Utils.showFieldError('resetPassNewPassword', 'Password must be at least 6 characters.');
+        return;
+      }
+
+      const result = Storage.resetUserPassword(email, role, newPassword);
+
+      if (result.success) {
+        Utils.showToast('Password reset successfully!', 'success');
+        Utils.closeModal('adminResetPasswordModal');
+
+        if (role === 'customer') renderCustomers();
+        else if (role === 'agent') renderAgents();
+        else if (role === 'supplier') renderSuppliersTable();
+      } else {
+        Utils.showToast(result.error || 'Failed to reset password.', 'error');
+      }
+    });
+  }
+}
+
 // Bind to window
 window.deletePrepurchasedBlock = deletePrepurchasedBlock;
 window.openEditSupplierModal = openEditSupplierModal;
@@ -1637,6 +1757,7 @@ window.toggleSupplierStatus = toggleSupplierStatus;
 window.deleteSupplier = deleteSupplier;
 window.impersonate = impersonate;
 window.openWalletModal = openWalletModal;
+window.openResetPasswordModal = openResetPasswordModal;
 
 // ── Reset Data ──
 function initResetDataBtn() {
@@ -1705,6 +1826,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Init wallet adjust form
   initWalletAdjustForm();
+
+  // Init password reset form
+  initResetPasswordForm();
 
   // Load default panel
   switchPanel('analytics');

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel — Special Fare</title>
-  <link rel="stylesheet" href="css/index.css?v=1.1.8" />
+  <link rel="stylesheet" href="css/index.css?v=1.1.9" />
   <style>
     /* ── Admin-specific overrides ── */
     .admin-navbar {
@@ -1702,11 +1702,59 @@
     </div>
   </div>
 
+  <!-- Reset User Password Modal -->
+  <div class="modal-overlay" id="adminResetPasswordModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">🔑 Reset User Password</div>
+        <button class="modal-close" onclick="Utils.closeModal('adminResetPasswordModal')">✕</button>
+      </div>
+      <form id="adminResetPasswordForm" novalidate>
+        <input type="hidden" id="resetPassTargetId" />
+        <input type="hidden" id="resetPassTargetRole" />
+        <input type="hidden" id="resetPassTargetEmail" />
+        
+        <div class="form-group">
+          <label class="form-label">User Details</label>
+          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:0.85rem 1rem; font-size:0.9rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span style="color:var(--text-muted);">Name:</span>
+              <strong id="resetPassTargetName">—</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span style="color:var(--text-muted);">Email:</span>
+              <strong id="resetPassTargetEmailText">—</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:var(--text-muted);">Role:</span>
+              <strong id="resetPassTargetRoleText" style="text-transform:capitalize;">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="resetPassNewPassword">New Password *</label>
+          <div class="input-icon-wrapper" style="position:relative;">
+            <input type="password" id="resetPassNewPassword" class="form-control" placeholder="Min. 6 characters" minlength="6" required style="padding-right: 80px;" />
+            <button type="button" id="toggleResetPassPwd" class="toggle-password" style="position:absolute; right:45px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer;">👁️</button>
+            <button type="button" id="generateRandomPassBtn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--accent-secondary); cursor:pointer; font-weight:bold; font-size:0.85rem;" title="Generate random password">🎲</button>
+          </div>
+          <div class="form-error" id="resetPassNewPasswordError"></div>
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="Utils.closeModal('adminResetPasswordModal')" style="flex:1">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">💾 Save Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Scripts -->
-  <script src="js/data.js?v=1.1.8"></script>
-  <script src="js/storage.js?v=1.1.8"></script>
-  <script src="js/utils.js?v=1.1.8"></script>
-  <script src="js/admin.js?v=1.1.8"></script>
+  <script src="js/data.js?v=1.1.9"></script>
+  <script src="js/storage.js?v=1.1.9"></script>
+  <script src="js/utils.js?v=1.1.9"></script>
+  <script src="js/admin.js?v=1.1.9"></script>
 </body>
 </html>
 

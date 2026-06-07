@@ -6,7 +6,7 @@
 const Storage = (() => {
 
   const KEYS = {
-    INITIALIZED: 'skywings_initialized',
+    INITIALIZED: 'specialfare_initialized_v4',
     USERS: 'skywings_users',
     AGENTS: 'skywings_agents',
     ADMINS: 'skywings_admins',
@@ -123,35 +123,7 @@ const Storage = (() => {
     futureDate.setDate(today.getDate() + 7);
     const futureDateStr = futureDate.toISOString().split('T')[0];
 
-    _set(KEYS.BOOKINGS, [
-      {
-        id: 'bk_demo_001',
-        pnr: 'SPF' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        userId: 'user_demo_001',
-        userType: 'customer',
-        flightNumber: '6E-2001',
-        airlineCode: '6E',
-        airlineName: 'IndiGo',
-        origin: 'DEL',
-        destination: 'BOM',
-        date: futureDateStr,
-        departureTime: '06:00',
-        arrivalTime: '08:10',
-        fareClass: 'economy',
-        passengers: [
-          { name: 'Rajesh Kumar', age: 35, gender: 'Male', idType: 'Aadhaar', idNumber: 'XXXX-XXXX-1234', seatPref: 'Window' }
-        ],
-        baseFare: 4500,
-        taxes: 225,
-        convenienceFee: 250,
-        totalFare: 4975,
-        status: 'confirmed',
-        paymentMethod: 'UPI',
-        bookedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-        meal: 'veg_meal',
-        extraBaggage: 'bag_0'
-      }
-    ]);
+    _set(KEYS.BOOKINGS, []);
 
     // Default markup rules
     _set(KEYS.MARKUP_RULES, {
@@ -191,44 +163,7 @@ const Storage = (() => {
     nextWeek.setDate(nextWeek.getDate() + 7);
     const nextWeekStr = nextWeek.toISOString().split('T')[0];
 
-    _set(KEYS.PREPURCHASED_INVENTORY, [
-      {
-        id: 'pp_001',
-        pnr: 'DELBOMGRP01',
-        supplierId: 'sup_indigo',
-        supplierName: 'IndiGo Bulk Desk',
-        airlineCode: '6E',
-        airlineName: 'IndiGo',
-        flightNumber: '6E-2001',
-        origin: 'DEL',
-        destination: 'BOM',
-        date: nextWeekStr,
-        fareClass: 'economy',
-        totalSeats: 30,
-        seatsRemaining: 25,
-        costPrice: 3200,
-        sellingPrice: 4500,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'pp_002',
-        pnr: 'BLRDELGRP02',
-        supplierId: 'sup_vistara',
-        supplierName: 'Vistara Charter Ops',
-        airlineCode: 'UK',
-        airlineName: 'Vistara',
-        flightNumber: 'UK-912',
-        origin: 'BLR',
-        destination: 'DEL',
-        date: nextWeekStr,
-        fareClass: 'business',
-        totalSeats: 10,
-        seatsRemaining: 8,
-        costPrice: 12000,
-        sellingPrice: 15500,
-        createdAt: new Date().toISOString()
-      }
-    ]);
+    _set(KEYS.PREPURCHASED_INVENTORY, []);
 
     _set(KEYS.INITIALIZED, true);
   }

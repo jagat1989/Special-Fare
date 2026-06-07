@@ -631,7 +631,7 @@
     const fareClassesHtml = buildFareClassButtons(flight, preferredClass);
 
     // Book button
-    const bookUrl = `booking.html?flightId=${encodeURIComponent(flight.id)}&class=${encodeURIComponent(preferredClass)}&passengers=${urlParams.passengers || 1}&date=${urlParams.date || flight.date}`;
+    const bookUrl = `booking.html?flightId=${encodeURIComponent(flight.id)}&class=${encodeURIComponent(preferredClass)}&passengers=${urlParams.passengers || 1}&date=${urlParams.date || flight.date}&from=${encodeURIComponent(flight.origin)}&to=${encodeURIComponent(flight.destination)}`;
 
     // Stops label
     const stopsClass = flight.stops > 0 ? 'has-stops' : '';
@@ -718,7 +718,7 @@
 
       const isSelected = cls.key === preferredClass ? 'selected-class' : '';
       const pax = parseInt(urlParams.passengers) || 1;
-      const bookUrl = `booking.html?flightId=${encodeURIComponent(flight.id)}&class=${encodeURIComponent(cls.key)}&passengers=${pax}&date=${urlParams.date || flight.date}`;
+      const bookUrl = `booking.html?flightId=${encodeURIComponent(flight.id)}&class=${encodeURIComponent(cls.key)}&passengers=${pax}&date=${urlParams.date || flight.date}&from=${encodeURIComponent(flight.origin)}&to=${encodeURIComponent(flight.destination)}`;
 
       return `
         <button class="fare-class-btn ${isSelected}" onclick="window.location.href='${bookUrl}'">

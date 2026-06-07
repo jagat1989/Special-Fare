@@ -961,21 +961,116 @@ const Storage = (() => {
   }
 
   // ═══════════════════════════════════════
-  // FLIGHT SEARCH (combines generated + custom)
+  // FLIGHT SEARCH (Only Admin Custom Flights & Supplier Pre-purchased Blocks)
   // ═══════════════════════════════════════
 
   function searchAllFlights(origin, destination, date) {
-    // Get generated flights
-    let flights = FlightData.searchFlights(origin, destination, date);
-
-    // Add custom flights
+    // 1. Get all custom flights uploaded by Admin that match origin, destination, date
     const customFlights = getCustomFlights();
-    const matchingCustom = customFlights.filter(f =>
+    let matchingCustom = customFlights.filter(f =>
       f.origin === origin && f.destination === destination && f.date === date
     );
-    flights = flights.concat(matchingCustom);
 
-    return flights;
+    // Deep copy to prevent mutating the database state directly
+    matchingCustom = JSON.parse(JSON.stringify(matchingCustom));
+
+    // 2. Get all supplier pre-purchased inventory blocks matching origin, destination, date
+    const supplierBlocks = getPrepurchasedInventory();
+    const matchingBlocks = supplierBlocks.filter(b =>
+      b.origin === origin && b.destination === destination && b.date === date && b.seatsRemaining > 0
+    );
+
+    // 3. Group matching supplier blocks by flight key (airlineCode + flightNumber)
+    const groupedBlocks = {};
+    matchingBlocks.forEach(block => {
+      const key = `${block.airlineCode}_${block.flightNumber}`;
+      if (!groupedBlocks[key]) {
+        groupedBlocks[key] = [];
+      }
+      groupedBlocks[key].push(block);
+    });
+
+    // 4. Merge supplier blocks into existing custom flights or create dynamic flights
+    for (const key in groupedBlocks) {
+      const blocks = groupedBlocks[key];
+      const firstBlock = blocks[0];
+
+      // Check if there is a matching custom flight
+      const customFlightIndex = matchingCustom.findIndex(cf =>
+        cf.airlineCode === firstBlock.airlineCode && cf.flightNumber === firstBlock.flightNumber
+      );
+
+      if (customFlightIndex !== -1) {
+        // Merge supplier blocks into existing custom flight (overriding prices & available seats)
+        const cf = matchingCustom[customFlightIndex];
+        blocks.forEach(block => {
+          cf.prices[block.fareClass] = block.sellingPrice;
+          cf.availableSeats[block.fareClass] = block.seatsRemaining;
+          if (!cf.classes.includes(block.fareClass)) {
+            cf.classes.push(block.fareClass);
+          }
+        });
+      } else {
+        // Create a new dynamic flight from supplier blocks
+        const airline = FlightData.getAirline(firstBlock.airlineCode);
+        const originAirport = FlightData.getAirport(firstBlock.origin);
+        const destAirport = FlightData.getAirport(firstBlock.destination);
+        const routeInfo = FlightData.getRouteInfo(firstBlock.origin, firstBlock.destination);
+        const duration = routeInfo ? routeInfo.duration : 120;
+        
+        // Find schedule template for departure time if exists
+        const template = FlightData.SCHEDULE_TEMPLATES.find(t => t.flightNum === firstBlock.flightNumber);
+        const departureTime = template ? template.departure : '12:00';
+        
+        // Calculate arrival time
+        const [depH, depM] = departureTime.split(':').map(Number);
+        const arrivalDate = new Date();
+        arrivalDate.setHours(depH, depM + duration, 0, 0);
+        const arrivalTime = `${String(arrivalDate.getHours()).padStart(2, '0')}:${String(arrivalDate.getMinutes()).padStart(2, '0')}`;
+        
+        const prices = {};
+        const availableSeats = {};
+        const classes = [];
+
+        blocks.forEach(block => {
+          prices[block.fareClass] = block.sellingPrice;
+          availableSeats[block.fareClass] = block.seatsRemaining;
+          classes.push(block.fareClass);
+        });
+
+        // Unique deterministic stable ID for supplier flights
+        const flightId = `sf_${firstBlock.airlineCode}_${firstBlock.flightNumber.replace('-', '')}_${firstBlock.date.replace(/-/g, '')}`;
+
+        const newFlight = {
+          id: flightId,
+          flightNumber: firstBlock.flightNumber,
+          airlineCode: firstBlock.airlineCode,
+          airlineName: airline ? airline.name : firstBlock.airlineCode,
+          airlineLogo: airline ? airline.logo : '✈️',
+          airlineColor: airline ? airline.color : '#6c5ce7',
+          airlineRating: airline ? airline.rating : 4.0,
+          origin: firstBlock.origin,
+          destination: firstBlock.destination,
+          originAirport,
+          destinationAirport: destAirport,
+          date: firstBlock.date,
+          departureTime,
+          arrivalTime,
+          duration,
+          distance: routeInfo ? routeInfo.distance : 0,
+          stops: 0,
+          stopText: 'Non-stop',
+          prices,
+          availableSeats,
+          classes,
+          aircraft: 'Supplier Block',
+          status: 'scheduled'
+        };
+        matchingCustom.push(newFlight);
+      }
+    }
+
+    return matchingCustom;
   }
 
   // ── Forgot / Reset Password ──

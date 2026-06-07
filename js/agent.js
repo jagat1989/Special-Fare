@@ -332,7 +332,10 @@ function renderFlightCards(flights, passengers) {
 
 function bookThisFlight(flightId, fareClass, passengers) {
   const date = document.getElementById('bookDate').value;
-  const url = `booking.html?flightId=${flightId}&class=${fareClass}&passengers=${passengers}&date=${date}&agentId=${session.userId}`;
+  const flight = allFlightResults.find(f => f.id === flightId);
+  const from = flight ? flight.origin : '';
+  const to = flight ? flight.destination : '';
+  const url = `booking.html?flightId=${flightId}&class=${fareClass}&passengers=${passengers}&date=${date}&from=${from}&to=${to}&agentId=${session.userId}`;
   window.location.href = url;
 }
 

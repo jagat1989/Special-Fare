@@ -1,0 +1,15 @@
+{
+  "name": "special-fare",
+  "version": "1.0.0",
+  "description": "Special Fare Flight Booking Search Engine",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "start": "echo 'This is a static site. Please serve the root folder directly.'"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+}

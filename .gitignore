@@ -10,3 +10,7 @@ db.db
 
 # Log files
 *.log
+
+# Build output directories
+dist/
+dist

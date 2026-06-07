@@ -343,7 +343,7 @@ function initAddFlightForm() {
       airlineCode,
       airlineName: airline ? airline.name : airlineCode,
       airlineLogo: airline ? airline.logo : '✈️',
-      airlineColor: airline ? airline.color : '#6c5ce7',
+      airlineColor: airline ? airline.color : '#0ea5e9',
       airlineRating: airline ? airline.rating : 4.0,
       origin,
       destination,
@@ -633,7 +633,7 @@ function renderCustomers() {
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#38bdf8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0">
               ${customer.name.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -649,7 +649,7 @@ function renderCustomers() {
         <td style="font-size:0.82rem;color:var(--text-muted)">${Utils.formatDate(customer.createdAt)}</td>
         <td>
           <button class="btn btn-sm" onclick="impersonate('${customer.id}', 'customer')"
-            style="background:rgba(108,92,231,0.15);color:#a5b4fc;border:1px solid rgba(108,92,231,0.3);padding:4px 10px;font-size:0.78rem">
+            style="background:rgba(14, 165, 233,0.15);color:#a5b4fc;border:1px solid rgba(14, 165, 233,0.3);padding:4px 10px;font-size:0.78rem">
             🔑 Login As
           </button>
         </td>
@@ -739,7 +739,7 @@ function renderAgents() {
               ✏️ Commission
             </button>
             <button class="btn btn-sm" onclick="impersonate('${agent.id}', 'agent')"
-              style="background:rgba(108,92,231,0.15);color:#a5b4fc;border:1px solid rgba(108,92,231,0.3);padding:4px 10px;font-size:0.78rem">
+              style="background:rgba(14, 165, 233,0.15);color:#a5b4fc;border:1px solid rgba(14, 165, 233,0.3);padding:4px 10px;font-size:0.78rem">
               🔑 Login As
             </button>
             <button class="btn btn-sm" onclick="openWalletModal('${agent.id}')"
@@ -1267,7 +1267,7 @@ function renderSuppliersTable() {
         <td>${statusBadge}</td>
         <td>
           <div style="display:flex; gap:6px;">
-            <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(108,92,231,0.15); color:#a5b4fc; border:1px solid rgba(108,92,231,0.3);"
+            <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(14, 165, 233,0.15); color:#a5b4fc; border:1px solid rgba(14, 165, 233,0.3);"
               onclick="impersonate('${s.id}', 'supplier')">🔑 Login As</button>
             <button class="btn btn-sm" style="padding:4px 8px; font-size:0.75rem; background:rgba(6,182,212,0.15); color:#67e8f9; border:1px solid rgba(6,182,212,0.3);"
               onclick="openEditSupplierModal('${s.id}')">✏️ Edit</button>
@@ -1610,3 +1610,4 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load default panel
   switchPanel('analytics');
 });
+

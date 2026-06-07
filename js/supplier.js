@@ -441,3 +441,4 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load default panel
   switchPanel('overview');
 });
+

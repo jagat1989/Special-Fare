@@ -982,7 +982,7 @@ const Storage = (() => {
           airlineCode: firstBlock.airlineCode,
           airlineName: airline ? airline.name : firstBlock.airlineCode,
           airlineLogo: airline ? airline.logo : '✈️',
-          airlineColor: airline ? airline.color : '#6c5ce7',
+          airlineColor: airline ? airline.color : '#0ea5e9',
           airlineRating: airline ? airline.rating : 4.0,
           origin: firstBlock.origin,
           destination: firstBlock.destination,
@@ -1128,3 +1128,4 @@ const Storage = (() => {
 
 // Auto-initialize on load
 Storage.initialize();
+

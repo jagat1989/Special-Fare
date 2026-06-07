@@ -52,3 +52,4 @@ try {
   console.error('Error building project:', err);
   process.exit(1);
 }
+

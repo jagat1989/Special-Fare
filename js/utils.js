@@ -443,7 +443,7 @@ const Utils = (() => {
     if (!container) return;
 
     const total = data.reduce((s, d) => s + d.value, 0);
-    const colors = ['#6c5ce7', '#a855f7', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899'];
+    const colors = ['#0ea5e9', '#38bdf8', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899'];
 
     let cumulativePct = 0;
     const gradient = data.map((d, i) => {
@@ -522,7 +522,7 @@ const Utils = (() => {
           <style>
             body { background: white; color: #333; padding: 20px; }
             .ticket { border: 2px solid #333; background: white; }
-            .ticket-header { background: #6c5ce7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .ticket-header { background: #0ea5e9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           </style>
         </head>
         <body>${el.outerHTML}<script>window.print();window.close();<\/script></body>
@@ -639,3 +639,4 @@ const Utils = (() => {
   };
 
 })();
+

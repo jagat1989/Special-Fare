@@ -977,3 +977,4 @@ const BookingFlow = (() => {
 
 // Auto-init
 document.addEventListener('DOMContentLoaded', () => BookingFlow.init());
+

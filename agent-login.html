@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Portal — Special Fare B2B</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(108, 92, 231, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.14) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .auth-wrapper {
+      width: 100%;
+      max-width: 520px;
+      animation: fadeInUp 0.6s ease both;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-wrapper.wide {
+      max-width: 700px;
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .auth-logo .brand {
+      font-size: 2rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .auth-logo .b2b-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(108, 92, 231, 0.15);
+      border: 1px solid rgba(108, 92, 231, 0.3);
+      color: var(--accent-primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin-top: 0.5rem;
+    }
+    .auth-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 0.4rem;
+      margin-bottom: 2rem;
+    }
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: none;
+      background: transparent;
+    }
+    .auth-tab.active {
+      background: var(--accent-primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.35);
+    }
+    .auth-tab:hover:not(.active) {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.06);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .auth-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+      font-family: 'Outfit', sans-serif;
+    }
+    .auth-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1.8rem;
+    }
+    .demo-hint {
+      background: rgba(108, 92, 231, 0.08);
+      border: 1px solid rgba(108, 92, 231, 0.2);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .demo-hint strong { color: var(--accent-primary); }
+    .demo-hint code {
+      background: rgba(108,92,231,0.15);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.82rem;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--accent-primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checkbox-group label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      line-height: 1.4;
+    }
+    .checkbox-group label a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+    .checkbox-group label a:hover { text-decoration: underline; }
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .back-link a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .back-link a:hover { opacity: 0.8; }
+    .success-message {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+    .success-message.show { display: block; }
+    .success-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .success-message h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .success-message p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .form-error {
+      color: #ef4444;
+      font-size: 0.78rem;
+      margin-top: 0.3rem;
+    }
+    .form-control.error {
+      border-color: #ef4444 !important;
+    }
+    .optional-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-left: 0.3rem;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-wrapper" id="authWrapper">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="brand">✈ Special Fare</div>
+        <div class="b2b-badge">🏢 B2B Agent Portal</div>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card">
+
+        <!-- Tabs -->
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" data-tab="login" onclick="switchTab('login')" role="tab">🔑 Login</button>
+          <button class="auth-tab" data-tab="register" onclick="switchTab('register')" role="tab">📝 Register as Agent</button>
+        </div>
+
+        <!-- ── LOGIN TAB ── -->
+        <div class="tab-panel active" id="tab-login">
+          <div id="loginFields">
+            <div class="auth-title">Welcome Back</div>
+            <div class="auth-subtitle">Sign in to your agent account to manage bookings</div>
+
+            <div class="demo-hint">
+              🔐 <strong>Demo Credentials:</strong> &nbsp;
+              <code>priya@travelmax.in</code> / <code>agent123</code>
+            </div>
+
+            <form id="loginForm" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="agent@agency.com" autocomplete="username" />
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label class="form-label" for="loginPassword">Password</label>
+                  <a href="#" id="forgotPasswordLink" style="font-size:0.8rem; color:var(--accent-primary); text-decoration:none;">Forgot Password?</a>
+                </div>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" autocomplete="current-password" />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:0.5rem;" id="loginBtn">
+                <span id="loginBtnText">🔑 Login to Agent Portal</span>
+              </button>
+            </form>
+
+            <div class="back-link" style="margin-top:1.2rem;">
+              ← <a href="index.html">Back to Main Site</a> &nbsp;|&nbsp;
+              <a href="admin-login.html">Admin Login</a>
+            </div>
+          </div>
+
+          <!-- ── Agent Recovery / Reset Panel ── -->
+          <div id="resetPanel" style="display:none; margin-top:0.5rem;">
+            <div class="auth-title">🔑 Reset Password</div>
+            <div class="auth-subtitle" style="margin-bottom:1.5rem;">Recover your B2B travel agent portal account</div>
+
+            <!-- Recovery Step 1: Email -->
+            <div id="resetStep1">
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.2rem; line-height:1.5;">
+                Enter your registered agency email address to receive an OTP.
+              </p>
+              <div class="form-group">
+                <label class="form-label" for="resetEmail">Email Address</label>
+                <input type="email" id="resetEmail" class="form-control" placeholder="agent@agency.com" />
+              </div>
+              <button type="button" class="btn btn-primary w-full" id="resetSendBtn" style="margin-top:0.5rem;">
+                Send OTP Code →
+              </button>
+            </div>
+
+            <!-- Recovery Step 2: OTP -->
+            <div id="resetStep2" style="display:none;">
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.2rem; line-height:1.5;">
+                A simulated 6-digit OTP code has been generated. Enter it below to verify your identity.
+              </p>
+              <div class="form-group">
+                <label class="form-label" for="resetOTP">Verification Code</label>
+                <input type="text" id="resetOTP" class="form-control text-center" placeholder="123456" maxlength="6" style="letter-spacing:0.3em; font-weight:700; font-size:1.1rem;" />
+              </div>
+              <button type="button" class="btn btn-primary w-full" id="resetVerifyBtn" style="margin-top:0.5rem;">
+                Verify Code →
+              </button>
+            </div>
+
+            <!-- Recovery Step 3: Password Reset -->
+            <div id="resetStep3" style="display:none;">
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.2rem; line-height:1.5;">
+                Choose a new secure password for your agent portal account.
+              </p>
+              <div class="form-group">
+                <label class="form-label" for="resetNewPassword">New Password</label>
+                <input type="password" id="resetNewPassword" class="form-control" placeholder="Min. 6 characters" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="resetConfirmPassword">Confirm New Password</label>
+                <input type="password" id="resetConfirmPassword" class="form-control" placeholder="Re-enter password" />
+              </div>
+              <button type="button" class="btn btn-primary w-full" id="resetSubmitBtn" style="margin-top:0.5rem;">
+                Reset Password & Login →
+              </button>
+            </div>
+
+            <div class="back-link" style="margin-top:1.2rem;">
+              <a href="#" id="resetBackToLogin" style="font-weight:500;">← Back to Login</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── REGISTER TAB ── -->
+        <div class="tab-panel" id="tab-register">
+          <div class="auth-title">Register Your Agency</div>
+          <div class="auth-subtitle">Join Special Fare B2B and start earning commissions on every booking</div>
+
+          <!-- Success Message -->
+          <div class="success-message" id="registerSuccess">
+            <div class="success-icon">🎉</div>
+            <h3>Registration Successful!</h3>
+            <p>
+              Your agency has been registered. Your account is currently <strong style="color: var(--accent-warning, #f59e0b);">Pending Admin Approval</strong>.<br><br>
+              You will be able to log in once an administrator reviews and approves your application. This usually takes 1-2 business days.
+            </p>
+            <button class="btn btn-primary" style="margin-top:1.5rem;" onclick="switchTab('login')">
+              Go to Login →
+            </button>
+          </div>
+
+          <form id="registerForm" novalidate id="registerFormEl">
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="agencyName">Agency Name <span style="color:#ef4444">*</span></label>
+                <input type="text" id="agencyName" class="form-control" placeholder="e.g. TravelMax India" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ownerName">Owner / Contact Name <span style="color:#ef4444">*</span></label>
+                <input type="text" id="ownerName" class="form-control" placeholder="Your full name" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="regEmail">Email Address <span style="color:#ef4444">*</span></label>
+                <input type="email" id="regEmail" class="form-control" placeholder="agency@email.com" autocomplete="email" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regPhone">Phone Number <span style="color:#ef4444">*</span></label>
+                <input type="tel" id="regPhone" class="form-control" placeholder="10-digit mobile" maxlength="10" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="regPassword">Password <span style="color:#ef4444">*</span></label>
+                <input type="password" id="regPassword" class="form-control" placeholder="Min. 6 characters" autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regConfirmPassword">Confirm Password <span style="color:#ef4444">*</span></label>
+                <input type="password" id="regConfirmPassword" class="form-control" placeholder="Re-enter password" autocomplete="new-password" />
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="regGST">GST Number <span class="optional-label">(optional)</span></label>
+                <input type="text" id="regGST" class="form-control" placeholder="22AAAAA0000A1Z5" maxlength="15" style="text-transform:uppercase;" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regPAN">PAN Card Number <span style="color:#ef4444">*</span></label>
+                <input type="text" id="regPAN" class="form-control" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regAddress">Office Address <span style="color:#ef4444">*</span></label>
+              <input type="text" id="regAddress" class="form-control" placeholder="Complete office/agency address" />
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="regCity">City <span style="color:#ef4444">*</span></label>
+                <input type="text" id="regCity" class="form-control" placeholder="Your city" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regState">State <span style="color:#ef4444">*</span></label>
+                <select id="regState" class="form-control">
+                  <option value="">Select State</option>
+                  <option>Andhra Pradesh</option>
+                  <option>Arunachal Pradesh</option>
+                  <option>Assam</option>
+                  <option>Bihar</option>
+                  <option>Chhattisgarh</option>
+                  <option>Goa</option>
+                  <option>Gujarat</option>
+                  <option>Haryana</option>
+                  <option>Himachal Pradesh</option>
+                  <option>Jharkhand</option>
+                  <option>Karnataka</option>
+                  <option>Kerala</option>
+                  <option>Madhya Pradesh</option>
+                  <option>Maharashtra</option>
+                  <option>Manipur</option>
+                  <option>Meghalaya</option>
+                  <option>Mizoram</option>
+                  <option>Nagaland</option>
+                  <option>Odisha</option>
+                  <option>Punjab</option>
+                  <option>Rajasthan</option>
+                  <option>Sikkim</option>
+                  <option>Tamil Nadu</option>
+                  <option>Telangana</option>
+                  <option>Tripura</option>
+                  <option>Uttar Pradesh</option>
+                  <option>Uttarakhand</option>
+                  <option>West Bengal</option>
+                  <option>Andaman and Nicobar Islands</option>
+                  <option>Chandigarh</option>
+                  <option>Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option>Delhi</option>
+                  <option>Jammu &amp; Kashmir</option>
+                  <option>Ladakh</option>
+                  <option>Lakshadweep</option>
+                  <option>Puducherry</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="agreeTerms" />
+              <label for="agreeTerms">
+                I agree to the <a href="#" onclick="return false;">B2B Terms &amp; Conditions</a> and acknowledge that my account will be subject to admin approval before activation.
+              </label>
+            </div>
+            <div id="termsError" class="form-error" style="margin-top:-0.5rem; margin-bottom:0.5rem;"></div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:0.5rem;" id="registerBtn">
+              <span id="registerBtnText">🏢 Register Agency</span>
+            </button>
+          </form>
+
+          <div class="back-link">
+            Already have an account? <a href="#" onclick="switchTab('login'); return false;">Login here</a>
+          </div>
+        </div>
+
+      </div>
+      <!-- /auth-card -->
+
+    </div>
+    <!-- /auth-wrapper -->
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // If already logged in as agent, redirect to dashboard
+    const session = Storage.getSession();
+    if (session && session.role === 'agent') {
+      window.location.href = 'agent-dashboard.html';
+    }
+
+    // ── Tab Switching ──
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+
+      // Resize wrapper for register tab
+      const wrapper = document.getElementById('authWrapper');
+      if (tab === 'register') {
+        wrapper.classList.add('wide');
+      } else {
+        wrapper.classList.remove('wide');
+      }
+
+      // Reset recovery flow if tab changes
+      resetAgentForgotFlow();
+    }
+
+    // ── Forgot Password Flow ──
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    const backToLoginLink = document.getElementById('resetBackToLogin');
+    const resetSendBtn = document.getElementById('resetSendBtn');
+    const resetVerifyBtn = document.getElementById('resetVerifyBtn');
+    const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+
+    const loginFields = document.getElementById('loginFields');
+    const resetPanel = document.getElementById('resetPanel');
+    const resetStep1 = document.getElementById('resetStep1');
+    const resetStep2 = document.getElementById('resetStep2');
+    const resetStep3 = document.getElementById('resetStep3');
+
+    let agentForgotEmail = '';
+    const simulatedOTP = '123456';
+
+    function showAgentResetStep(stepNum) {
+      resetStep1.style.display = stepNum === 1 ? 'block' : 'none';
+      resetStep2.style.display = stepNum === 2 ? 'block' : 'none';
+      resetStep3.style.display = stepNum === 3 ? 'block' : 'none';
+    }
+
+    function resetAgentForgotFlow() {
+      loginFields.style.display = 'block';
+      resetPanel.style.display = 'none';
+      document.getElementById('resetEmail').value = '';
+      document.getElementById('resetOTP').value = '';
+      document.getElementById('resetNewPassword').value = '';
+      document.getElementById('resetConfirmPassword').value = '';
+      Utils.clearFieldError('resetEmail');
+      Utils.clearFieldError('resetOTP');
+      Utils.clearFieldError('resetNewPassword');
+      Utils.clearFieldError('resetConfirmPassword');
+      agentForgotEmail = '';
+      showAgentResetStep(1);
+    }
+
+    if (forgotLink) {
+      forgotLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginFields.style.display = 'none';
+        resetPanel.style.display = 'block';
+        showAgentResetStep(1);
+      });
+    }
+
+    if (backToLoginLink) {
+      backToLoginLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetAgentForgotFlow();
+      });
+    }
+
+    // Step 1: Send OTP
+    if (resetSendBtn) {
+      resetSendBtn.addEventListener('click', () => {
+        const email = document.getElementById('resetEmail').value.trim();
+        Utils.clearFieldError('resetEmail');
+
+        if (!email) {
+          Utils.showFieldError('resetEmail', 'Email is required.');
+          return;
+        }
+        if (!Utils.validateEmail(email)) {
+          Utils.showFieldError('resetEmail', 'Please enter a valid email address.');
+          return;
+        }
+
+        // Verify if email is registered under Agent role
+        if (!Storage.verifyEmailExists(email, 'agent')) {
+          Utils.showFieldError('resetEmail', 'This email is not registered as an agent.');
+          return;
+        }
+
+        agentForgotEmail = email;
+        resetSendBtn.disabled = true;
+        resetSendBtn.innerHTML = '⏳ Sending OTP...';
+
+        setTimeout(() => {
+          resetSendBtn.disabled = false;
+          resetSendBtn.innerHTML = 'Send OTP Code →';
+          Utils.showToast('Simulation OTP code: ' + simulatedOTP, 'info', 8000);
+          showAgentResetStep(2);
+        }, 800);
+      });
+    }
+
+    // Step 2: Verify OTP
+    if (resetVerifyBtn) {
+      resetVerifyBtn.addEventListener('click', () => {
+        const otp = document.getElementById('resetOTP').value.trim();
+        Utils.clearFieldError('resetOTP');
+
+        if (!otp) {
+          Utils.showFieldError('resetOTP', 'Verification code is required.');
+          return;
+        }
+        if (otp !== simulatedOTP) {
+          Utils.showFieldError('resetOTP', 'Incorrect verification code. Hint: ' + simulatedOTP);
+          return;
+        }
+
+        showAgentResetStep(3);
+      });
+    }
+
+    // Step 3: Reset Password
+    if (resetSubmitBtn) {
+      resetSubmitBtn.addEventListener('click', () => {
+        const newpass = document.getElementById('resetNewPassword').value;
+        const confpass = document.getElementById('resetConfirmPassword').value;
+
+        Utils.clearFieldError('resetNewPassword');
+        Utils.clearFieldError('resetConfirmPassword');
+
+        let valid = true;
+        if (!newpass) {
+          Utils.showFieldError('resetNewPassword', 'New password is required.');
+          valid = false;
+        } else if (newpass.length < 6) {
+          Utils.showFieldError('resetNewPassword', 'Password must be at least 6 characters.');
+          valid = false;
+        }
+
+        if (!confpass) {
+          Utils.showFieldError('resetConfirmPassword', 'Please confirm your password.');
+          valid = false;
+        } else if (newpass !== confpass) {
+          Utils.showFieldError('resetConfirmPassword', 'Passwords do not match.');
+          valid = false;
+        }
+
+        if (!valid) return;
+
+        resetSubmitBtn.disabled = true;
+        resetSubmitBtn.innerHTML = '⏳ Resetting...';
+
+        setTimeout(() => {
+          const res = Storage.resetUserPassword(agentForgotEmail, 'agent', newpass);
+          resetSubmitBtn.disabled = false;
+          resetSubmitBtn.innerHTML = 'Reset Password & Login →';
+
+          if (res.success) {
+            Utils.showToast('Password reset successfully! Please log in.', 'success');
+            resetAgentForgotFlow();
+            const emailField = document.getElementById('loginEmail');
+            if (emailField) emailField.value = agentForgotEmail;
+          } else {
+            Utils.showToast(res.error || 'Password reset failed.', 'error');
+          }
+        }, 800);
+      });
+    }
+
+    // ── Login Form ──
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      // Clear previous errors
+      ['loginEmail', 'loginPassword'].forEach(id => Utils.clearFieldError(id));
+
+      let valid = true;
+
+      if (!email) {
+        Utils.showFieldError('loginEmail', 'Email is required.');
+        valid = false;
+      } else if (!Utils.validateEmail(email)) {
+        Utils.showFieldError('loginEmail', 'Please enter a valid email address.');
+        valid = false;
+      }
+
+      if (!password) {
+        Utils.showFieldError('loginPassword', 'Password is required.');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      const btn = document.getElementById('loginBtn');
+      const btnText = document.getElementById('loginBtnText');
+      btn.disabled = true;
+      btnText.textContent = '⏳ Logging in...';
+
+      setTimeout(() => {
+        const result = Storage.login(email, password, 'agent');
+
+        if (result.success) {
+          Utils.showToast('Login successful! Welcome back, ' + result.user.ownerName + ' 👋', 'success');
+          setTimeout(() => {
+            window.location.href = 'agent-dashboard.html';
+          }, 800);
+        } else {
+          btn.disabled = false;
+          btnText.textContent = '🔑 Login to Agent Portal';
+          Utils.showToast(result.error || 'Login failed. Please check your credentials.', 'error');
+        }
+      }, 600);
+    });
+
+    // ── Register Form ──
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const agencyName = document.getElementById('agencyName').value.trim();
+      const ownerName = document.getElementById('ownerName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+      const gstNumber = document.getElementById('regGST').value.trim().toUpperCase();
+      const panNumber = document.getElementById('regPAN').value.trim().toUpperCase();
+      const city = document.getElementById('regCity').value.trim();
+      const state = document.getElementById('regState').value;
+      const address = document.getElementById('regAddress').value.trim();
+      const agreeTerms = document.getElementById('agreeTerms').checked;
+
+      // Clear errors
+      ['agencyName','ownerName','regEmail','regPhone','regPassword','regConfirmPassword','regCity','regState','regPAN','regAddress'].forEach(id => Utils.clearFieldError(id));
+      document.getElementById('termsError').textContent = '';
+
+      let valid = true;
+
+      if (!agencyName) { Utils.showFieldError('agencyName', 'Agency name is required.'); valid = false; }
+      if (!ownerName) { Utils.showFieldError('ownerName', 'Owner name is required.'); valid = false; }
+
+      if (!email) {
+        Utils.showFieldError('regEmail', 'Email is required.'); valid = false;
+      } else if (!Utils.validateEmail(email)) {
+        Utils.showFieldError('regEmail', 'Please enter a valid email address.'); valid = false;
+      }
+
+      if (!phone) {
+        Utils.showFieldError('regPhone', 'Phone number is required.'); valid = false;
+      } else if (!Utils.validatePhone(phone)) {
+        Utils.showFieldError('regPhone', 'Enter valid 10-digit Indian mobile number.'); valid = false;
+      }
+
+      if (!password) {
+        Utils.showFieldError('regPassword', 'Password is required.'); valid = false;
+      } else if (password.length < 6) {
+        Utils.showFieldError('regPassword', 'Password must be at least 6 characters.'); valid = false;
+      }
+
+      if (!confirmPassword) {
+        Utils.showFieldError('regConfirmPassword', 'Please confirm your password.'); valid = false;
+      } else if (password !== confirmPassword) {
+        Utils.showFieldError('regConfirmPassword', 'Passwords do not match.'); valid = false;
+      }
+
+      if (gstNumber && !Utils.validateGST(gstNumber)) {
+        Utils.showFieldError('regGST', 'Invalid GST number format.'); valid = false;
+      }
+
+      if (!panNumber) {
+        Utils.showFieldError('regPAN', 'PAN number is required.'); valid = false;
+      } else if (!Utils.validatePAN(panNumber)) {
+        Utils.showFieldError('regPAN', 'Invalid PAN number format (e.g. ABCDE1234F).'); valid = false;
+      }
+
+      if (!address) {
+        Utils.showFieldError('regAddress', 'Address is required.'); valid = false;
+      }
+
+      if (!city) { Utils.showFieldError('regCity', 'City is required.'); valid = false; }
+      if (!state) { Utils.showFieldError('regState', 'Please select a state.'); valid = false; }
+
+      if (!agreeTerms) {
+        document.getElementById('termsError').textContent = 'You must agree to the B2B Terms & Conditions.';
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      const btn = document.getElementById('registerBtn');
+      const btnText = document.getElementById('registerBtnText');
+      btn.disabled = true;
+      btnText.textContent = '⏳ Registering...';
+
+      setTimeout(() => {
+        const result = Storage.registerAgent({
+          agencyName,
+          ownerName,
+          email,
+          password,
+          phone,
+          gstNumber,
+          panNumber,
+          city,
+          state,
+          address
+        });
+
+        if (result.success) {
+          // Show success message
+          document.getElementById('registerForm').style.display = 'none';
+          document.getElementById('registerSuccess').classList.add('show');
+          Utils.showToast('Agency registered successfully! Pending admin approval.', 'success', 5000);
+        } else {
+          btn.disabled = false;
+          btnText.textContent = '🏢 Register Agency';
+          Utils.showToast(result.error || 'Registration failed. Please try again.', 'error');
+        }
+      }, 700);
+    });
+
+    // Auto-uppercase PAN and GST
+    document.getElementById('regGST').addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+    document.getElementById('regPAN').addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+  </script>
+</body>
+</html>

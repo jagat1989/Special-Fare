@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Special Fare — India's Premier Flight Booking Engine</title>
+  <meta name="description" content="Special Fare is India's most trusted flight search engine. Search, compare, and book flights across 28 airports, 6 airlines, and 200+ daily flights with real-time seat availability." />
+  <meta name="keywords" content="flight booking India, cheap flights, IndiGo, Air India, SpiceJet, Vistara, Akasa Air, Go First" />
+  <meta name="theme-color" content="#6c5ce7" />
+
+  <!-- Preconnect for fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="css/index.css" />
+
+  <style>
+    /* ── Landing-page-specific overrides ── */
+    .hero-wrapper {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Nav dropdown */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      font-family: var(--font-primary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: var(--transition-base);
+    }
+    .nav-dropdown-toggle:hover {
+      background: var(--bg-glass-hover);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .nav-dropdown-toggle .chevron {
+      font-size: 0.7rem;
+      transition: transform var(--transition-fast);
+    }
+    .nav-dropdown.open .chevron {
+      transform: rotate(180deg);
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 200px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: var(--transition-base);
+      z-index: var(--z-dropdown);
+    }
+    .nav-dropdown.open .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: var(--transition-fast);
+      cursor: pointer;
+    }
+    .nav-dropdown-item:hover {
+      background: var(--bg-glass-hover);
+      color: var(--text-primary);
+    }
+    .nav-dropdown-item .item-icon {
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+    }
+    .nav-dropdown-item .item-badge {
+      margin-left: auto;
+    }
+
+    /* Hero layout */
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+      padding: var(--space-3xl) 0 var(--space-2xl);
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: var(--space-xl) 0;
+    }
+    .stats-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      flex: 1;
+      min-width: 150px;
+      text-align: center;
+      padding: var(--space-md) var(--space-xl);
+      position: relative;
+    }
+    .stat-item + .stat-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      height: 60%;
+      width: 1px;
+      background: var(--border);
+    }
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+      display: block;
+    }
+    .stat-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    /* Section headers */
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+    .section-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-primary);
+      background: rgba(108, 92, 231, 0.1);
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-md);
+    }
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: var(--space-md);
+    }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Feature cards */
+    .feature-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl) var(--space-xl);
+      text-align: center;
+      transition: var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      right: 0; height: 3px;
+      background: var(--accent-gradient);
+      transform: scaleX(0);
+      transition: transform var(--transition-base);
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-glow);
+      border-color: rgba(108,92,231,0.3);
+    }
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+    .feature-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-xl);
+      background: rgba(108,92,231,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto var(--space-lg);
+      transition: var(--transition-base);
+    }
+    .feature-card:hover .feature-icon {
+      background: rgba(108,92,231,0.22);
+      transform: scale(1.1);
+    }
+    .feature-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: var(--space-sm);
+    }
+    .feature-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Horizontal divider with label */
+    .divider-label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-xl);
+    }
+    .divider-label::before,
+    .divider-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Hero badge */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: rgba(108,92,231,0.12);
+      border: 1px solid rgba(108,92,231,0.25);
+      border-radius: var(--radius-full);
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: var(--space-lg);
+      animation: fadeInDown 0.6s ease;
+    }
+    .hero-badge .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    /* Floating plane decoration */
+    .hero-plane {
+      position: absolute;
+      top: 15%;
+      right: 5%;
+      font-size: 6rem;
+      opacity: 0.04;
+      animation: float 12s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Round trip return date */
+    #return-date-group {
+      display: none;
+    }
+    #return-date-group.visible {
+      display: block;
+    }
+
+    /* Passenger counter */
+    .passenger-counter {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      transition: var(--transition-base);
+    }
+    .passenger-counter:focus-within {
+      border-color: var(--border-focus);
+      background: var(--bg-input-focus);
+      box-shadow: 0 0 0 3px rgba(108,92,231,0.1);
+    }
+    .pax-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-glass);
+      color: var(--text-primary);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .pax-btn:hover {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+    .pax-count {
+      flex: 1;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+    .pax-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* Announce bar */
+    .announce-bar {
+      background: linear-gradient(135deg, rgba(108,92,231,0.15), rgba(6,182,212,0.1));
+      border-bottom: 1px solid rgba(108,92,231,0.2);
+      padding: 10px 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      position: relative;
+      z-index: 201;
+    }
+    .announce-bar strong {
+      color: var(--accent-secondary);
+    }
+
+    /* CTA section */
+    .cta-section {
+      background: var(--accent-gradient);
+      border-radius: var(--radius-xl);
+      padding: var(--space-3xl) var(--space-2xl);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -15%;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .cta-section::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: -10%;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .cta-content { position: relative; z-index: 1; }
+    .cta-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: var(--space-md);
+    }
+    .cta-subtitle {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: var(--space-xl);
+    }
+    .btn-white {
+      background: white;
+      color: var(--accent-primary);
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .btn-white:hover {
+      background: rgba(255,255,255,0.92);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    /* Session nav link */
+    #session-nav-link { display: none; }
+
+    @media (max-width: 768px) {
+      .stats-inner { flex-direction: column; }
+      .stat-item + .stat-item::before { display: none; }
+      .hero-inner { padding: var(--space-2xl) 0 var(--space-xl); }
+      .cta-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Announcement Bar ── -->
+  <div class="announce-bar">
+    🎉 <strong>Special Offer:</strong> Get flat ₹500 off on your first booking! Use code <strong>SPECIALFARE500</strong> &nbsp;|&nbsp; 🔒 Secure Payments &nbsp;|&nbsp; ✈ Real-time Availability
+  </div>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <!-- Brand -->
+      <a href="index.html" class="nav-brand">
+        <div class="brand-icon">✈</div>
+        Special Fare
+      </a>
+
+      <!-- Nav Links -->
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="search.html" id="search-nav-link">Search Flights</a></li>
+        <li><a href="#popular-routes">Deals</a></li>
+        <li id="session-nav-link">
+          <a href="#" id="session-page-link" class="font-semibold" style="color:var(--accent-secondary)">
+            Dashboard
+          </a>
+        </li>
+      </ul>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <!-- Login Dropdown -->
+        <div class="nav-dropdown" id="login-dropdown">
+          <button class="nav-dropdown-toggle" id="login-toggle">
+            <span>Login</span>
+            <span class="chevron">▼</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#" class="nav-dropdown-item" id="customer-login-btn">
+              <span class="item-icon">👤</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary)">Customer</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Book flights for yourself</div>
+              </div>
+            </a>
+            <a href="agent-login.html" class="nav-dropdown-item">
+              <span class="item-icon">🏢</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary)">Travel Agent</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">B2B booking portal</div>
+              </div>
+              <span class="item-badge"><span class="badge badge-primary">B2B</span></span>
+            </a>
+            <a href="supplier-login.html" class="nav-dropdown-item">
+              <span class="item-icon">🔌</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary)">Supplier Portal</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Partner inventory extranet</div>
+              </div>
+              <span class="item-badge"><span class="badge badge-info">Extranet</span></span>
+            </a>
+            <a href="admin-login.html" class="nav-dropdown-item">
+              <span class="item-icon">⚙️</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary)">Admin Panel</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">System management</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero Section ── -->
+  <section class="hero" id="hero">
+    <div class="hero-plane">✈</div>
+    <div class="hero-wrapper">
+      <div class="hero-inner">
+
+        <!-- Hero Text -->
+        <div class="hero-content animate-fadeIn">
+          <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Live Seat Availability Across India
+          </div>
+          <h1 class="hero-title">
+            India's Most Trusted<br>
+            <span class="text-gradient">Flight Search Engine</span>
+          </h1>
+          <p class="hero-subtitle">
+            Search, compare, and book flights across 28 Indian airports with a fully self-managed inventory of 6 major airlines. Real-time pricing, instant confirmations, and zero hidden charges.
+          </p>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box animate-fadeInUp animate-delay-2" id="search-box">
+
+          <!-- Search Tabs -->
+          <div class="search-tabs">
+            <button class="search-tab active" data-trip="one-way" id="tab-oneway">✈ One Way</button>
+            <button class="search-tab" data-trip="round-trip" id="tab-roundtrip">⇄ Round Trip</button>
+          </div>
+
+          <!-- Search Fields -->
+          <div class="search-fields" id="search-fields">
+
+            <!-- From -->
+            <div class="search-field" id="from-field-wrapper" style="position:relative;">
+              <label for="from-input">From</label>
+              <div style="position:relative;">
+                <span class="field-icon">🛫</span>
+                <input type="text" id="from-input" class="form-control form-control-lg" placeholder="City or Airport" autocomplete="off" />
+                <div class="autocomplete-dropdown" id="from-dropdown"></div>
+              </div>
+              <!-- Swap Button -->
+              <button class="swap-btn" id="swap-btn" title="Swap airports" style="position:absolute;right:-18px;bottom:10px;z-index:10;width:36px;height:36px;border-radius:50%;background:var(--accent-gradient);border:3px solid var(--bg-primary);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;transition:var(--transition-base);box-shadow:var(--shadow-md);">⇄</button>
+            </div>
+
+            <!-- To -->
+            <div class="search-field" style="position:relative;">
+              <label for="to-input">To</label>
+              <div style="position:relative;">
+                <span class="field-icon">🛬</span>
+                <input type="text" id="to-input" class="form-control form-control-lg" placeholder="City or Airport" autocomplete="off" />
+                <div class="autocomplete-dropdown" id="to-dropdown"></div>
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div class="search-field">
+              <label for="travel-date">Departure Date</label>
+              <div style="position:relative;">
+                <span class="field-icon">📅</span>
+                <input type="date" id="travel-date" class="form-control form-control-lg" />
+              </div>
+            </div>
+
+            <!-- Return Date (Round Trip) -->
+            <div class="search-field" id="return-date-group">
+              <label for="return-date">Return Date</label>
+              <div style="position:relative;">
+                <span class="field-icon">📅</span>
+                <input type="date" id="return-date" class="form-control form-control-lg" />
+              </div>
+            </div>
+
+            <!-- Passengers -->
+            <div class="search-field">
+              <label>Passengers</label>
+              <div class="passenger-counter">
+                <button class="pax-btn" id="pax-minus">−</button>
+                <div>
+                  <div class="pax-count" id="pax-count">1</div>
+                  <div class="pax-label">Adult</div>
+                </div>
+                <button class="pax-btn" id="pax-plus">+</button>
+              </div>
+              <input type="hidden" id="passengers-hidden" value="1" />
+            </div>
+
+            <!-- Class -->
+            <div class="search-field">
+              <label for="travel-class">Class</label>
+              <div style="position:relative;">
+                <span class="field-icon">💺</span>
+                <select id="travel-class" class="form-control form-control-lg" style="padding-left:44px;appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7a99' d='M6 8L1 3h10z'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;">
+                  <option value="economy">Economy</option>
+                  <option value="premium_economy">Premium Economy</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search Button -->
+            <div class="search-field" style="display:flex;align-items:flex-end;">
+              <button class="btn btn-primary btn-lg w-full search-btn" id="search-btn" style="height:54px;font-size:1rem;">
+                🔍 Search Flights
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Quick Suggestions -->
+          <div style="margin-top:var(--space-md);display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;">
+            <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">Popular:</span>
+            <button class="btn btn-sm btn-secondary" onclick="fillQuickSearch('DEL','BOM')">Delhi → Mumbai</button>
+            <button class="btn btn-sm btn-secondary" onclick="fillQuickSearch('BOM','GOI')">Mumbai → Goa</button>
+            <button class="btn btn-sm btn-secondary" onclick="fillQuickSearch('BLR','DEL')">Bengaluru → Delhi</button>
+            <button class="btn btn-sm btn-secondary" onclick="fillQuickSearch('DEL','SXR')">Delhi → Srinagar</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Stats Strip ── -->
+  <div class="stats-strip">
+    <div class="container">
+      <div class="stats-inner">
+        <div class="stat-item">
+          <span class="stat-number" id="stat-airports">0</span>
+          <div class="stat-desc">Indian Airports</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-airlines">0</span>
+          <div class="stat-desc">Partner Airlines</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-flights">0</span>
+          <div class="stat-desc">Daily Flights</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-routes">0</span>
+          <div class="stat-desc">Active Routes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Popular Routes Section ── -->
+  <section class="section" id="popular-routes">
+    <div class="container">
+      <div class="section-header animate-fadeInUp">
+        <div class="section-eyebrow">✈ Top Destinations</div>
+        <h2 class="section-title">Popular <span class="text-gradient">Flight Routes</span></h2>
+        <p class="section-subtitle">
+          Discover the most-booked routes across India. Prices shown are the lowest available fares for economy class.
+        </p>
+      </div>
+      <div class="routes-grid" id="routes-grid">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+      <div style="text-align:center;margin-top:var(--space-2xl);">
+        <a href="search.html" class="btn btn-secondary btn-lg">
+          View All Routes →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Airlines Section ── -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="section-header animate-fadeInUp">
+        <div class="section-eyebrow">🤝 Our Airlines</div>
+        <h2 class="section-title">Powered by <span class="text-gradient">6 Major Airlines</span></h2>
+        <p class="section-subtitle">
+          We partner with India's leading carriers to bring you the widest choice of flights and the best real-time fares.
+        </p>
+      </div>
+      <div class="airline-strip" id="airlines-strip">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features Section ── -->
+  <section class="section" style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container">
+      <div class="section-header animate-fadeInUp">
+        <div class="section-eyebrow">⚡ Why Special Fare</div>
+        <h2 class="section-title">Built for <span class="text-gradient">Smart Travellers</span></h2>
+        <p class="section-subtitle">
+          Cutting-edge features that make flight booking faster, smarter, and more transparent than ever before.
+        </p>
+      </div>
+      <div class="grid grid-3" id="features-grid">
+
+        <div class="feature-card animate-fadeInUp animate-delay-1">
+          <div class="feature-icon">💰</div>
+          <h3 class="feature-title">Best Fares Guaranteed</h3>
+          <p class="feature-desc">Dynamic pricing engine scans all available fares across our 6 airline partners. No markup, no hidden fees — just transparent pricing with full GST breakdowns.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp animate-delay-2">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Instant Booking</h3>
+          <p class="feature-desc">From search to confirmation in under 60 seconds. Automated PNR generation, instant e-tickets, and real-time seat assignment for a seamless experience.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp animate-delay-3">
+          <div class="feature-icon">🪑</div>
+          <h3 class="feature-title">Real-time Seat Availability</h3>
+          <p class="feature-desc">Live seat inventory across Economy, Premium Economy, and Business classes. Interactive seat map lets you choose your preferred seat at booking.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp animate-delay-1">
+          <div class="feature-icon">🤝</div>
+          <h3 class="feature-title">B2B Agent Portal</h3>
+          <p class="feature-desc">Full-featured travel agent dashboard with custom markup rules, commission tracking, wallet management, and dedicated B2B booking capabilities.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp animate-delay-2">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Mobile-First Design</h3>
+          <p class="feature-desc">Fully responsive interface designed for modern devices. Search and book from any screen size with the same premium experience across all platforms.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp animate-delay-3">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Secure & Reliable</h3>
+          <p class="feature-desc">Enterprise-grade security for every transaction. Role-based access control for customers, agents, and admins with complete audit trails.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA Section ── -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-section animate-fadeInUp">
+        <div class="cta-content">
+          <div style="font-size:3rem;margin-bottom:var(--space-md);">✈</div>
+          <h2 class="cta-title">Ready to Take Off?</h2>
+          <p class="cta-subtitle">Join thousands of travellers who trust Special Fare for seamless flight booking across India.</p>
+          <div style="display:flex;gap:var(--space-md);justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-white btn-lg" onclick="document.getElementById('from-input').focus();document.getElementById('hero').scrollIntoView({behavior:'smooth'})">
+              🔍 Search Flights Now
+            </button>
+            <a href="agent-login.html" class="btn btn-lg" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);">
+              🏢 Become an Agent
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+
+        <!-- Brand -->
+        <div>
+          <div class="footer-brand">
+            <div class="brand-icon" style="width:36px;height:36px;background:var(--accent-gradient);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1rem;">✈</div>
+            Special Fare
+          </div>
+          <p class="footer-desc">
+            India's premier flight booking engine — connecting 28 airports across the country with 6 major airlines, 200+ daily flights, and real-time seat availability. Built for travellers, agents, and administrators alike.
+          </p>
+          <div class="footer-social" style="margin-top:var(--space-lg);">
+            <a href="#" title="Twitter / X">𝕏</a>
+            <a href="#" title="LinkedIn">in</a>
+            <a href="#" title="Instagram">📸</a>
+            <a href="#" title="YouTube">▶</a>
+          </div>
+        </div>
+
+        <!-- Flights -->
+        <div>
+          <div class="footer-title">Flights</div>
+          <ul class="footer-links">
+            <li><a href="search.html">Search Flights</a></li>
+            <li><a href="search.html?from=DEL&to=BOM">Delhi to Mumbai</a></li>
+            <li><a href="search.html?from=BOM&to=GOI">Mumbai to Goa</a></li>
+            <li><a href="search.html?from=BLR&to=DEL">Bengaluru to Delhi</a></li>
+            <li><a href="search.html?from=DEL&to=SXR">Delhi to Srinagar</a></li>
+            <li><a href="#popular-routes">Popular Routes</a></li>
+          </ul>
+        </div>
+
+        <!-- Partners -->
+        <div>
+          <div class="footer-title">For Partners</div>
+          <ul class="footer-links">
+            <li><a href="agent-login.html">Agent Login</a></li>
+            <li><a href="agent-login.html#register">Agent Registration</a></li>
+            <li><a href="agent-dashboard.html">Agent Dashboard</a></li>
+            <li><a href="admin-login.html">Admin Panel</a></li>
+            <li><a href="#">API Access</a></li>
+            <li><a href="#">Commission Structure</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <div class="footer-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#">Help Centre</a></li>
+            <li><a href="#">Cancellation Policy</a></li>
+            <li><a href="#">Refund Status</a></li>
+            <li><a href="#">Baggage Policy</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom" style="flex-direction: column; gap: var(--space-xs); text-align: center;">
+        <span id="footer-copyright">© 2026 Special Fare Aviation Pvt. Ltd. | Chailengta, LTV, Dhalai Tripur | Phone: +91 7001507011. All rights reserved.</span>
+        <span style="color:var(--text-muted);">Made with ❤️ for Indian travellers</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Customer Login Modal ── -->
+  <div class="modal-overlay" id="customer-login-modal">
+    <div class="modal-content" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">👤 Customer Login</h3>
+        <button class="modal-close" onclick="Utils.closeModal('customer-login-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <!-- ── Login View ── -->
+        <div id="cust-login-form-view">
+          <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <div class="input-icon-wrapper">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="cust-email" class="form-control" placeholder="your@email.com" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-icon-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="cust-password" class="form-control" placeholder="••••••••" />
+              </div>
+              <a href="#" id="cust-forgot-link" style="display:block; text-align:right; font-size:0.8rem; color:var(--accent-primary); text-decoration:none; margin-top:6px;">Forgot Password?</a>
+            </div>
+            <p class="form-hint" style="margin-bottom:0;">
+              Demo: rajesh@example.com / demo123
+            </p>
+          </div>
+          <div class="modal-footer" style="flex-direction:column;gap:var(--space-sm); padding: 1.5rem;">
+            <button class="btn btn-primary w-full" id="cust-login-btn">Login →</button>
+            <div class="auth-divider">or</div>
+            <button class="btn btn-secondary w-full" id="cust-register-btn">Create Account</button>
+          </div>
+        </div>
+
+        <!-- ── Forgot Password View ── -->
+        <div id="cust-forgot-view" style="display:none;">
+          <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+            <!-- Step 1: Enter Email -->
+            <div id="cust-forgot-step1">
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.5;">Enter your registered email address to recover your password.</p>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <div class="input-icon-wrapper">
+                  <span class="input-icon">✉️</span>
+                  <input type="email" id="cust-forgot-email" class="form-control" placeholder="your@email.com" />
+                </div>
+              </div>
+              <button class="btn btn-primary w-full" id="cust-forgot-send-btn" style="margin-top:var(--space-md);">Send OTP Code →</button>
+            </div>
+
+            <!-- Step 2: Verification Code -->
+            <div id="cust-forgot-step2" style="display:none;">
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.5;">A simulated 6-digit OTP code has been generated. Please enter it below.</p>
+              <div class="form-group">
+                <label class="form-label">6-Digit Verification Code</label>
+                <input type="text" id="cust-forgot-otp" class="form-control text-center" placeholder="123456" maxlength="6" style="letter-spacing:0.3em; font-weight:700; font-size:1.1rem;" />
+              </div>
+              <button class="btn btn-primary w-full" id="cust-forgot-verify-btn" style="margin-top:var(--space-md);">Verify Code →</button>
+            </div>
+
+            <!-- Step 3: Enter New Password -->
+            <div id="cust-forgot-step3" style="display:none;">
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.5;">Enter your new password below.</p>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="cust-forgot-newpass" class="form-control" placeholder="Min. 6 characters" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" id="cust-forgot-confpass" class="form-control" placeholder="Re-enter password" />
+              </div>
+              <button class="btn btn-primary w-full" id="cust-forgot-reset-btn" style="margin-top:var(--space-md);">Reset Password & Login →</button>
+            </div>
+          </div>
+          <div class="modal-footer" style="padding: 1rem 1.5rem 1.5rem 1.5rem; border-top:none;">
+            <a href="#" id="cust-forgot-back-btn" style="display:block; text-align:center; font-size:0.85rem; color:var(--text-muted); text-decoration:none; width:100%; font-weight:500;">← Back to Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Customer Register Modal ── -->
+  <div class="modal-overlay" id="customer-register-modal">
+    <div class="modal-content" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✨ Create Account</h3>
+        <button class="modal-close" onclick="Utils.closeModal('customer-register-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="reg-name" class="form-control" placeholder="Rahul Sharma" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="reg-phone" class="form-control" placeholder="9876543210" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="reg-email" class="form-control" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="Min. 6 characters" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="Utils.closeModal('customer-register-modal');Utils.openModal('customer-login-modal')">Back</button>
+        <button class="btn btn-primary" id="reg-submit-btn">Create Account →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ── Scripts ── -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

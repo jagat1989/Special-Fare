@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Flight — Special Fare</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    /* ── Booking-page extra styles ── */
+    .booking-page {
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+
+    .booking-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    .booking-main { min-width: 0; }
+
+    .step-content {
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+    .step-content.active {
+      display: block;
+    }
+
+    /* Flight Review Card */
+    .flight-review-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .flight-review-header {
+      background: linear-gradient(135deg, rgba(108,92,231,0.15) 0%, rgba(6,182,212,0.1) 100%);
+      padding: var(--space-lg) var(--space-xl);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .flight-review-body {
+      padding: var(--space-xl);
+    }
+    .flight-big-route {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xl);
+      margin: var(--space-lg) 0;
+    }
+    .big-route-point { text-align: center; }
+    .big-route-time {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .big-route-code {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .big-route-city {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .big-route-center {
+      flex: 1;
+      text-align: center;
+    }
+    .big-route-line {
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      margin: 8px 0;
+    }
+    .big-route-line::before {
+      content: '✈';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      color: var(--accent-primary);
+      background: var(--bg-secondary);
+      padding: 0 10px;
+    }
+    .big-route-duration {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .big-route-stops {
+      font-size: 0.8rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Fare breakdown table */
+    .fare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .fare-table tr td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .fare-table tr:last-child td { border-bottom: none; }
+    .fare-table .fare-label { color: var(--text-secondary); }
+    .fare-table .fare-value { text-align: right; font-weight: 500; color: var(--text-primary); }
+    .fare-table .fare-total td {
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .fare-table .fare-total .fare-label { color: var(--text-primary); }
+    .fare-table .fare-total .fare-value { color: var(--accent-secondary); font-size: 1.2rem; }
+
+    /* Passenger forms */
+    .passenger-block {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+    }
+    .passenger-block-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .passenger-num-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    /* Add-on cards (meal / baggage) */
+    .addon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-md);
+    }
+    .addon-card {
+      background: var(--bg-glass);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+      text-align: center;
+      position: relative;
+    }
+    .addon-card:hover {
+      border-color: rgba(108,92,231,0.3);
+      background: var(--bg-glass-hover);
+    }
+    .addon-card.selected {
+      border-color: var(--accent-primary);
+      background: rgba(108,92,231,0.08);
+      box-shadow: 0 0 0 2px rgba(108,92,231,0.2);
+    }
+    .addon-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .addon-emoji { font-size: 2rem; margin-bottom: var(--space-xs); }
+    .addon-name { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .addon-price { font-size: 0.8rem; color: var(--accent-secondary); font-weight: 600; margin-top: 4px; }
+    .addon-check {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+    .addon-card.selected .addon-check { display: flex; }
+
+    /* Seat section */
+    .seat-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+    }
+    .seat-map-wrapper {
+      overflow-x: auto;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    /* Payment section */
+    .payment-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+    .payment-tabs-wrap .tabs { margin-bottom: var(--space-lg); }
+    .upi-qr-box {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      text-align: center;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-glass);
+      line-height: 1.6;
+    }
+    .qr-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-md);
+      font-family: var(--font-primary);
+    }
+    .divider-or {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: var(--space-lg) 0;
+      position: relative;
+    }
+    .divider-or::before, .divider-or::after {
+      content: '';
+      position: absolute;
+      top: 50%; width: 45%;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider-or::before { left: 0; }
+    .divider-or::after { right: 0; }
+
+    /* Order summary sidebar */
+    .order-summary {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      position: sticky;
+      top: 90px;
+    }
+    .summary-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 0.875rem;
+    }
+    .summary-row .s-label { color: var(--text-secondary); }
+    .summary-row .s-value { font-weight: 500; color: var(--text-primary); }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: var(--space-md);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--border);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .summary-total .s-total-amount { color: var(--accent-secondary); font-size: 1.2rem; }
+
+    /* Confirmation step */
+    .confirm-wrapper {
+      text-align: center;
+      padding: var(--space-xl) 0;
+    }
+    .success-icon-wrap {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto var(--space-xl);
+      border-radius: 50%;
+      background: rgba(34,197,94,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounceIn 0.7s ease forwards;
+    }
+    .success-checkmark {
+      font-size: 3rem;
+      animation: popIn 0.5s 0.3s ease both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0) rotate(-45deg); opacity: 0; }
+      to { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .pnr-display-box {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--bg-glass);
+      border: 2px solid var(--accent-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-xl);
+      margin: var(--space-lg) 0;
+    }
+    .pnr-number {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .btn-copy-pnr {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      transition: var(--transition-fast);
+    }
+    .btn-copy-pnr:hover {
+      background: var(--bg-glass);
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+    }
+
+    /* Spinner overlay in payment */
+    .payment-spinner-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,9,24,0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      gap: var(--space-lg);
+      display: none;
+    }
+    .payment-spinner-overlay.active { display: flex; }
+    .processing-text {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Step nav buttons */
+    .step-nav {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+      align-items: center;
+    }
+    .step-nav .btn { min-width: 140px; }
+
+    /* Booking sidebar (right column on non-payment steps) */
+    .booking-sidebar .order-summary { top: 90px; }
+
+    /* Booking page responsive */
+    @media (max-width: 900px) {
+      .booking-layout { grid-template-columns: 1fr; }
+      .booking-sidebar { order: -1; }
+      .payment-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .big-route-time { font-size: 1.75rem; }
+      .addon-grid { grid-template-columns: repeat(2, 1fr); }
+      .step-nav { flex-direction: column; }
+      .step-nav .btn { width: 100%; }
+    }
+
+    /* Card number input spacing */
+    .card-number-input { letter-spacing: 0.12em; font-family: monospace; font-size: 1.1rem; }
+    input.form-control.error { border-color: var(--danger); }
+
+    /* ══════════════════════════════════════════════
+       SUCCESS BANNER & PNR STRIP
+    ══════════════════════════════════════════════ */
+    .confirm-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--space-xl) 0 var(--space-3xl);
+    }
+    .success-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xl);
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl) var(--space-2xl);
+      margin-bottom: var(--space-xl);
+      text-align: left;
+    }
+    .success-icon-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+    .success-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid #22c55e;
+      animation: successRing 0.6s ease forwards;
+    }
+    @keyframes successRing {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-checkmark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #22c55e;
+      animation: popIn 0.4s 0.3s ease both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0) rotate(-45deg); opacity: 0; }
+      to { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .pnr-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(108,92,231,0.08);
+      border: 1.5px solid rgba(108,92,231,0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    .pnr-strip-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .pnr-number {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .btn-copy-pnr {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 10px 18px;
+      font-size: 0.875rem;
+      font-family: var(--font-primary);
+      font-weight: 500;
+      transition: var(--transition-base);
+    }
+    .btn-copy-pnr:hover {
+      background: var(--bg-glass-hover);
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+    }
+
+    /* ══════════════════════════════════════════════
+       PROFESSIONAL E-TICKET (RECEIPT STYLE)
+    ══════════════════════════════════════════════ */
+    .eticket {
+      background: rgba(15, 20, 42, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      margin-bottom: var(--space-xl);
+      color: var(--text-primary);
+      padding: var(--space-2xl);
+      text-align: left;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .eticket-receipt-header {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .receipt-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #a78bfa, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-sm);
+    }
+
+    .receipt-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .meta-separator {
+      color: rgba(255, 255, 255, 0.15);
+      font-weight: 300;
+    }
+
+    .pnr-highlight {
+      font-family: monospace;
+      color: #a78bfa;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+    }
+
+    .eticket-receipt-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .receipt-section-heading {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: var(--space-md);
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Table Styles */
+    .receipt-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--space-sm);
+    }
+
+    .receipt-table th {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      padding: 10px 14px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+
+    .receipt-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: top;
+      color: var(--text-primary);
+    }
+
+    .receipt-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Passenger Details Table specifically */
+    .eticket-pax-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .eticket-pax-table th {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      padding: 10px 14px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+
+    .eticket-pax-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+      color: var(--text-primary);
+    }
+
+    /* Itinerary Columns styling */
+    .itinerary-carrier {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: 4px;
+    }
+
+    .itinerary-carrier-logo {
+      font-size: 1.2rem;
+      color: #a78bfa;
+    }
+
+    .itinerary-flight-code {
+      font-family: monospace;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+
+    .itinerary-sector {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .itinerary-sector-city {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .itinerary-date {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+
+    .itinerary-time {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #06b6d4;
+      margin-bottom: 4px;
+    }
+
+    .itinerary-terminal {
+      font-size: 0.78rem;
+      color: #fbbf24;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .itinerary-airport {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .itinerary-class,
+    .itinerary-seat,
+    .itinerary-duration {
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .itinerary-class strong,
+    .itinerary-seat strong {
+      color: var(--text-primary);
+    }
+
+    .itinerary-duration {
+      color: var(--text-secondary);
+    }
+
+    .itinerary-stops {
+      font-size: 0.75rem;
+      color: #10b981;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    /* Timings list */
+    .receipt-timings {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .receipt-timings li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+
+    .receipt-timings li strong {
+      color: #a78bfa;
+    }
+
+    .receipt-timings li strong.highlight-red {
+      color: #f87171;
+    }
+
+    /* Payment and fare summary layout */
+    .receipt-payment-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    .receipt-fare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .receipt-fare-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .receipt-fare-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .receipt-fare-table .lbl {
+      color: var(--text-secondary);
+    }
+
+    .receipt-fare-table .val {
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .receipt-fare-table .total-row td {
+      border-top: 1.5px solid rgba(255, 255, 255, 0.1);
+      padding-top: 12px;
+      font-weight: 800;
+    }
+
+    .receipt-fare-table .total-row .lbl {
+      color: var(--text-primary);
+    }
+
+    .receipt-fare-table .total-row .val {
+      font-size: 1.2rem;
+      color: #22d3ee;
+      font-family: var(--font-display);
+    }
+
+    .receipt-payment-info {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1.5px dashed rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: var(--space-md) var(--space-lg);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .receipt-payment-info strong {
+      color: var(--text-primary);
+    }
+
+    /* Terms */
+    .receipt-terms {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .receipt-terms li {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .receipt-terms li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #fbbf24;
+    }
+
+    .receipt-terms li strong {
+      color: var(--text-secondary);
+    }
+
+    .eticket-receipt-footer {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding-top: var(--space-lg);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.06);
+      margin-top: var(--space-lg);
+    }
+
+    /* Action buttons */
+    .eticket-actions {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      margin-top: var(--space-xl);
+    }
+
+    /* ══════════════════════════════════════════════
+       SINGLE-PAGE PRINT STYLESHEET (A4 PORTRAIT)
+    ══════════════════════════════════════════════ */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm 8mm 8mm 8mm;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 9px !important;
+        line-height: 1.35 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Hide standard UI components */
+      .navbar,
+      .stepper,
+      .booking-page > *:not(.booking-wrapper),
+      .eticket-actions,
+      .pnr-strip,
+      .success-banner,
+      .toast-container,
+      .payment-spinner-overlay,
+      .step-content:not(#step-5),
+      #step-5 .booking-layout > .booking-sidebar,
+      #page-title,
+      #page-subtitle,
+      h2, p {
+        display: none !important;
+      }
+
+      /* Reset layout wrappers */
+      .booking-page {
+        padding-top: 0 !important;
+        min-height: 0 !important;
+      }
+      .booking-wrapper,
+      .confirm-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      #step-5 {
+        display: block !important;
+      }
+
+      /* E-Ticket print rules */
+      .eticket {
+        background: #ffffff !important;
+        border: 1.5px solid #111111 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 0 !important;
+        color: #000000 !important;
+        padding: 12px 14px !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+
+      .eticket-receipt-header {
+        border-bottom: 1.5px solid #111111 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .receipt-title {
+        font-size: 1.15rem !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        background: none !important;
+        font-weight: 800 !important;
+      }
+
+      .receipt-meta {
+        font-size: 0.72rem !important;
+        color: #333333 !important;
+        gap: 8px !important;
+      }
+
+      .receipt-meta strong {
+        color: #000000 !important;
+      }
+
+      .meta-separator {
+        color: #555555 !important;
+      }
+
+      .pnr-highlight {
+        color: #000000 !important;
+        font-weight: 800 !important;
+      }
+
+      .eticket-receipt-section {
+        margin-bottom: 10px !important;
+      }
+
+      .receipt-section-heading {
+        font-size: 0.78rem !important;
+        color: #000000 !important;
+        border-bottom: 1px solid #111111 !important;
+        padding-bottom: 3px !important;
+        margin-bottom: 6px !important;
+      }
+
+      .receipt-table th,
+      .eticket-pax-table th {
+        background: #f2f2f2 !important;
+        color: #000000 !important;
+        font-size: 0.68rem !important;
+        padding: 5px 8px !important;
+        border: 1px solid #111111 !important;
+        font-weight: 700 !important;
+      }
+
+      .receipt-table td,
+      .eticket-pax-table td {
+        padding: 5px 8px !important;
+        border: 1px solid #111111 !important;
+        font-size: 0.7rem !important;
+        color: #000000 !important;
+      }
+
+      .itinerary-carrier-logo {
+        display: none !important;
+      }
+
+      .itinerary-carrier strong {
+        color: #000000 !important;
+      }
+
+      .itinerary-flight-code {
+        color: #333333 !important;
+        font-size: 0.68rem !important;
+        margin-bottom: 4px !important;
+      }
+
+      .itinerary-sector {
+        font-size: 0.85rem !important;
+        color: #000000 !important;
+      }
+
+      .itinerary-sector-city {
+        font-size: 0.68rem !important;
+        color: #333333 !important;
+      }
+
+      .itinerary-date {
+        color: #111111 !important;
+        font-size: 0.7rem !important;
+      }
+
+      .itinerary-time {
+        font-size: 0.85rem !important;
+        color: #000000 !important;
+      }
+
+      .itinerary-terminal {
+        color: #000000 !important;
+        font-size: 0.7rem !important;
+      }
+
+      .itinerary-airport {
+        font-size: 0.65rem !important;
+        color: #333333 !important;
+      }
+
+      .itinerary-class,
+      .itinerary-seat,
+      .itinerary-duration {
+        font-size: 0.7rem !important;
+      }
+
+      .itinerary-stops {
+        color: #000000 !important;
+        font-weight: 700 !important;
+      }
+
+      /* Timings print */
+      .receipt-timings {
+        gap: 4px !important;
+      }
+
+      .receipt-timings li {
+        padding: 4px 10px !important;
+        background: #fdfdfd !important;
+        border: 1px solid #111111 !important;
+        border-radius: 4px !important;
+        font-size: 0.7rem !important;
+      }
+
+      .receipt-timings li strong {
+        color: #000000 !important;
+      }
+
+      .receipt-timings li strong.highlight-red {
+        color: #000000 !important;
+        font-weight: 800 !important;
+      }
+
+      /* Payment print */
+      .receipt-payment-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+      }
+
+      .receipt-fare-table td {
+        padding: 4px 0 !important;
+        border-bottom: 1px solid #f2f2f2 !important;
+        font-size: 0.7rem !important;
+      }
+
+      .receipt-fare-table .val {
+        color: #000000 !important;
+      }
+
+      .receipt-fare-table .total-row td {
+        border-top: 1px solid #000000 !important;
+        padding-top: 6px !important;
+      }
+
+      .receipt-fare-table .total-row .val {
+        font-size: 0.9rem !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+      }
+
+      .receipt-payment-info {
+        border: 1px dashed #111111 !important;
+        background: #ffffff !important;
+        padding: 5px 8px !important;
+        font-size: 0.68rem !important;
+        color: #000000 !important;
+      }
+
+      /* Terms print */
+      .receipt-terms {
+        gap: 4px !important;
+      }
+
+      .receipt-terms li {
+        font-size: 0.65rem !important;
+        color: #222222 !important;
+        line-height: 1.3 !important;
+        padding-left: 10px !important;
+      }
+
+      .receipt-terms li::before {
+        color: #000000 !important;
+      }
+
+      .receipt-terms li strong {
+        color: #000000 !important;
+      }
+
+      /* Footer print */
+      .eticket-receipt-footer {
+        color: #333333 !important;
+        padding-top: 6px !important;
+        border-top: 1px solid #111111 !important;
+        margin-top: 6px !important;
+        font-size: 0.7rem !important;
+      }
+    }
+
+    /* Responsive overrides */
+    @media (max-width: 768px) {
+      .eticket-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+      }
+      .eticket-header-right {
+        text-align: left;
+        align-items: flex-start;
+      }
+      .eticket-airline-strip {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+      }
+      .eticket-route-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--space-lg);
+      }
+      .eticket-city-block.origin,
+      .eticket-city-block.destination {
+        text-align: center;
+        max-width: 100%;
+      }
+      .eticket-route-middle {
+        width: 100%;
+      }
+      .eticket-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .eticket-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .eticket-details-grid {
+        grid-template-columns: 1fr;
+      }
+      .eticket-info-grid {
+        grid-template-columns: 1fr;
+      }
+      .eticket-detail-cell {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .eticket-detail-cell:last-child {
+        border-bottom: none;
+      }
+      .eticket-info-card {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .eticket-info-card:last-child {
+        border-bottom: none;
+      }
+      .eticket-fare-footer {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: stretch;
+      }
+      .eticket-fare-divider {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <div class="brand-icon">✈</div>
+        Special Fare
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="search.html">Search Flights</a></li>
+        <li><a href="agent-login.html">Agent Portal</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div id="nav-user-area"></div>
+      </div>
+      <button class="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Booking Page ── -->
+  <div class="booking-page">
+    <div class="booking-wrapper">
+
+      <!-- Page heading -->
+      <div class="mb-4 animate-fadeIn">
+        <h2 class="text-gradient" id="page-title">Complete Your Booking</h2>
+        <p class="text-secondary mt-1" id="page-subtitle">You're just a few steps away from your flight!</p>
+      </div>
+
+      <!-- ── 4-Step Stepper ── -->
+      <div class="stepper animate-fadeIn animate-delay-1" id="booking-stepper">
+        <div class="step active" id="step-ind-1">
+          <div class="step-number">1</div>
+          <div class="step-label">Review</div>
+        </div>
+        <div class="step-connector" id="conn-1"></div>
+        <div class="step" id="step-ind-2">
+          <div class="step-number">2</div>
+          <div class="step-label">Passengers</div>
+        </div>
+        <div class="step-connector" id="conn-2"></div>
+        <div class="step" id="step-ind-4">
+          <div class="step-number">3</div>
+          <div class="step-label">Payment</div>
+        </div>
+        <div class="step-connector" id="conn-3"></div>
+        <div class="step" id="step-ind-5">
+          <div class="step-number">4</div>
+          <div class="step-label">Confirmation</div>
+        </div>
+      </div>
+
+      <!-- ── Booking Steps Container ── -->
+      <div id="booking-steps">
+
+        <!-- ===================== STEP 1: Review Flight ===================== -->
+        <div class="step-content active animate-fadeInUp" id="step-1">
+          <div class="booking-layout">
+            <div class="booking-main">
+
+              <!-- Flight Detail Card -->
+              <div class="flight-review-card mb-3" id="flight-detail-card">
+                <div class="flight-review-header">
+                  <div>
+                    <div class="flex items-center gap-md">
+                      <div class="airline-logo" id="rev-airline-logo">✈</div>
+                      <div>
+                        <div class="airline-name" id="rev-airline-name">Loading...</div>
+                        <div class="airline-code" id="rev-flight-number">—</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="rev-class-badge"></div>
+                </div>
+                <div class="flight-review-body">
+                  <div class="flight-big-route">
+                    <div class="big-route-point">
+                      <div class="big-route-time" id="rev-dep-time">—</div>
+                      <div class="big-route-code" id="rev-origin">—</div>
+                      <div class="big-route-city" id="rev-origin-city">—</div>
+                    </div>
+                    <div class="big-route-center">
+                      <div class="big-route-duration" id="rev-duration">—</div>
+                      <div class="big-route-line"></div>
+                      <div class="big-route-stops" id="rev-stops">Non-stop</div>
+                    </div>
+                    <div class="big-route-point" style="text-align:right">
+                      <div class="big-route-time" id="rev-arr-time">—</div>
+                      <div class="big-route-code" id="rev-destination">—</div>
+                      <div class="big-route-city" id="rev-dest-city">—</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-md text-sm" style="color:var(--text-muted)">
+                    <span>📅 <span id="rev-date">—</span></span>
+                    <span>•</span>
+                    <span>✈ <span id="rev-aircraft">A320</span></span>
+                    <span>•</span>
+                    <span>⭐ <span id="rev-rating">—</span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fare Breakdown -->
+              <div class="card-elevated mb-3">
+                <h4 class="card-title mb-3">💳 Fare Breakdown</h4>
+                <table class="fare-table" id="fare-breakdown-table">
+                  <tr>
+                    <td class="fare-label">Base Fare <span id="fb-pax-label" style="color:var(--text-muted);font-size:0.8rem"></span></td>
+                    <td class="fare-value" id="fb-base">—</td>
+                  </tr>
+                  <tr id="fb-gst-row">
+                    <td class="fare-label">GST (<span id="fb-gst-pct">5</span>%)</td>
+                    <td class="fare-value" id="fb-gst">—</td>
+                  </tr>
+                  <tr>
+                    <td class="fare-label">Convenience Fee</td>
+                    <td class="fare-value" id="fb-conv">—</td>
+                  </tr>
+                  <tr id="fb-markup-row" class="hidden">
+                    <td class="fare-label">Agent Markup</td>
+                    <td class="fare-value" id="fb-markup">—</td>
+                  </tr>
+                  <tr class="fare-total">
+                    <td class="fare-label">Total Fare</td>
+                    <td class="fare-value" id="fb-total">—</td>
+                  </tr>
+                </table>
+                <p class="text-xs" style="color:var(--text-muted);margin-top:var(--space-md)">
+                  * Price shown is for <strong id="fb-pax-count">1</strong> passenger(s).
+                  GST at <span id="fb-gst-note">5%</span> for economy / 12% for business.
+                </p>
+              </div>
+
+              <!-- Agent info note -->
+              <div id="agent-booking-note" class="hidden alert alert-info mb-3">
+                🏢 Booking as agent: <strong id="agent-name-note"></strong>.
+                Commission will be credited to your wallet upon confirmation.
+              </div>
+
+              <div class="step-nav">
+                <a href="javascript:history.back()" class="btn btn-secondary">← Back to Results</a>
+                <button class="btn btn-primary btn-lg" onclick="BookingFlow.goToStep(2)">Continue →</button>
+              </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="booking-sidebar">
+              <div class="order-summary">
+                <div class="summary-title">✈ Trip Summary</div>
+                <div id="sidebar-flight-info">
+                  <div class="summary-row">
+                    <span class="s-label">Route</span>
+                    <span class="s-value" id="sb-route">—</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="s-label">Date</span>
+                    <span class="s-value" id="sb-date">—</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="s-label">Class</span>
+                    <span class="s-value" id="sb-class">—</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="s-label">Passengers</span>
+                    <span class="s-value" id="sb-pax">1</span>
+                  </div>
+                </div>
+                <div class="summary-total">
+                  <span>Total</span>
+                  <span class="s-total-amount" id="sb-total">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== STEP 2: Passenger Details ===================== -->
+        <div class="step-content" id="step-2">
+          <div class="booking-layout">
+            <div class="booking-main">
+              <h3 class="mb-3">👤 Passenger Details</h3>
+              <div id="passenger-forms-container"></div>
+
+              <!-- Contact Info -->
+              <div class="card-elevated mb-3">
+                <h4 class="card-title mb-3">📬 Contact Information</h4>
+                <p class="text-sm mb-3" style="color:var(--text-muted)">
+                  Booking confirmation will be sent to this contact.
+                </p>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="contact-email">Email Address *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">✉</span>
+                      <input type="email" id="contact-email" class="form-control" placeholder="you@example.com" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="contact-phone">Mobile Number *</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">📱</span>
+                      <input type="tel" id="contact-phone" class="form-control" placeholder="10-digit number" maxlength="10" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-nav">
+                <button class="btn btn-secondary" onclick="BookingFlow.goToStep(1)">← Back</button>
+                <button class="btn btn-primary btn-lg" onclick="BookingFlow.validateAndNext(2)">Continue →</button>
+              </div>
+            </div>
+            <div class="booking-sidebar">
+              <div class="order-summary">
+                <div class="summary-title">✈ Trip Summary</div>
+                <div class="summary-row"><span class="s-label">Route</span><span class="s-value" id="sb2-route">—</span></div>
+                <div class="summary-row"><span class="s-label">Date</span><span class="s-value" id="sb2-date">—</span></div>
+                <div class="summary-row"><span class="s-label">Class</span><span class="s-value" id="sb2-class">—</span></div>
+                <div class="summary-total"><span>Total</span><span class="s-total-amount" id="sb2-total">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== STEP 4: Payment ===================== -->
+        <div class="step-content" id="step-4">
+          <h3 class="mb-3">💳 Secure Payment</h3>
+          <div class="payment-layout">
+            <div class="payment-main">
+
+              <!-- Payment Method Tabs -->
+              <div class="payment-tabs-wrap card-elevated">
+                <div class="tabs" id="payment-tabs">
+                  <button class="tab-item active" data-tab="tab-upi">📱 UPI</button>
+                  <button class="tab-item" data-tab="tab-card">💳 Card</button>
+                  <button class="tab-item" data-tab="tab-netbank">🏦 Net Banking</button>
+                </div>
+
+                <!-- UPI Tab -->
+                <div class="tab-content active" id="tab-upi">
+                  <div class="form-group">
+                    <label class="form-label" for="upi-id">UPI ID</label>
+                    <div class="flex gap-md">
+                      <div class="input-icon-wrapper flex-1">
+                        <span class="input-icon">@</span>
+                        <input type="text" id="upi-id" class="form-control" placeholder="yourname@upi" />
+                      </div>
+                      <button class="btn btn-secondary" onclick="BookingFlow.verifyUPI()">Verify</button>
+                    </div>
+                    <div class="form-hint">e.g. name@okicici, number@ybl, name@paytm</div>
+                    <div class="form-error" id="upi-error"></div>
+                  </div>
+
+                  <div class="divider-or">or scan QR code</div>
+
+                  <div class="upi-qr-box">
+                    <pre style="font-size:0.65rem;line-height:1.2;color:var(--text-muted)">
+  ██████████████  ████  ██████████████
+  ██          ██  ████  ██          ██
+  ██  ██████  ██  ████  ██  ██████  ██
+  ██  ██████  ██  ████  ██  ██████  ██
+  ██  ██████  ██        ██  ██████  ██
+  ██          ██  ████  ██          ██
+  ██████████████  ████  ██████████████
+  ████  ████████  ████  ████  ████████
+  ██████  ██  ██████  ██████  ████████
+  ████████  ████  ████████  ██████████
+  ██████████████  ████  ██████████████
+  ██          ██  ████  ██          ██
+  ██  ██████  ██  ████  ██  ██████  ██
+  ██  ██████  ██  ████  ██  ██████  ██
+  ██          ██  ████  ██          ██
+  ██████████████        ██████████████</pre>
+                    <div class="qr-label">Scan with any UPI app · Valid for 10 minutes</div>
+                    <div style="margin-top:var(--space-md);font-size:0.8rem;color:var(--accent-secondary);font-family:var(--font-primary)">
+                      UPI: specialfare@axis
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card Tab -->
+                <div class="tab-content" id="tab-card">
+                  <div class="form-group">
+                    <label class="form-label" for="card-number">Card Number</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon">💳</span>
+                      <input type="text" id="card-number" class="form-control card-number-input"
+                        placeholder="1234  5678  9012  3456" maxlength="19"
+                        oninput="BookingFlow.formatCardNumber(this)" />
+                    </div>
+                    <div class="form-error" id="card-number-error"></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="card-expiry">Expiry Date</label>
+                      <input type="text" id="card-expiry" class="form-control"
+                        placeholder="MM / YY" maxlength="7"
+                        oninput="BookingFlow.formatExpiry(this)" />
+                      <div class="form-error" id="card-expiry-error"></div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="card-cvv">CVV</label>
+                      <input type="password" id="card-cvv" class="form-control"
+                        placeholder="•••" maxlength="4" />
+                      <div class="form-error" id="card-cvv-error"></div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="card-name">Name on Card</label>
+                    <input type="text" id="card-name" class="form-control"
+                      placeholder="As printed on card" />
+                    <div class="form-error" id="card-name-error"></div>
+                  </div>
+                  <div class="alert alert-info" style="margin-top:0">
+                    🔒 Your card details are encrypted and secure. We never store CVV.
+                  </div>
+                </div>
+
+                <!-- Net Banking Tab -->
+                <div class="tab-content" id="tab-netbank">
+                  <div class="form-group">
+                    <label class="form-label" for="bank-select">Select Your Bank</label>
+                    <select id="bank-select" class="form-control form-control-lg">
+                      <option value="">— Choose your bank —</option>
+                      <option value="sbi">🏦 State Bank of India (SBI)</option>
+                      <option value="hdfc">🏦 HDFC Bank</option>
+                      <option value="icici">🏦 ICICI Bank</option>
+                      <option value="axis">🏦 Axis Bank</option>
+                      <option value="kotak">🏦 Kotak Mahindra Bank</option>
+                      <option value="pnb">🏦 Punjab National Bank (PNB)</option>
+                      <option value="boi">🏦 Bank of India</option>
+                      <option value="canara">🏦 Canara Bank</option>
+                      <option value="union">🏦 Union Bank of India</option>
+                      <option value="yes">🏦 Yes Bank</option>
+                    </select>
+                    <div class="form-error" id="bank-error"></div>
+                  </div>
+                  <div class="alert alert-info">
+                    🔄 You will be redirected to your bank's secure net banking portal to complete the payment.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Action -->
+              <div class="step-nav">
+                <button class="btn btn-secondary" onclick="BookingFlow.goToStep(2)">← Back</button>
+                <button class="btn btn-primary btn-lg" id="pay-btn" onclick="BookingFlow.processPayment()">
+                  Pay <span id="pay-btn-amount">—</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Payment Order Summary -->
+            <div class="order-summary" style="position:sticky;top:90px">
+              <div class="summary-title">🧾 Order Summary</div>
+              <div class="summary-row">
+                <span class="s-label">Flight</span>
+                <span class="s-value font-semibold" id="psb-flight">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Route</span>
+                <span class="s-value" id="psb-route">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Date</span>
+                <span class="s-value" id="psb-date">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Class</span>
+                <span class="s-value" id="psb-class">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Passengers</span>
+                <span class="s-value" id="psb-pax">1</span>
+              </div>
+              <div class="summary-row" id="psb-meal-row">
+                <span class="s-label">Meal</span>
+                <span class="s-value" id="psb-meal">—</span>
+              </div>
+              <div class="summary-row" id="psb-bag-row">
+                <span class="s-label">Extra Baggage</span>
+                <span class="s-value" id="psb-bag">—</span>
+              </div>
+              <hr style="border-color:var(--border);margin:var(--space-md) 0" />
+              <div class="summary-row">
+                <span class="s-label">Base Fare</span>
+                <span class="s-value" id="psb-base">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Taxes & GST</span>
+                <span class="s-value" id="psb-tax">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="s-label">Convenience Fee</span>
+                <span class="s-value" id="psb-conv">—</span>
+              </div>
+              <div class="summary-row" id="psb-markup-row" style="display:none">
+                <span class="s-label">Agent Markup</span>
+                <span class="s-value" id="psb-markup">—</span>
+              </div>
+              <div class="summary-row" id="psb-addon-row">
+                <span class="s-label">Add-ons</span>
+                <span class="s-value" id="psb-addon">—</span>
+              </div>
+              <div class="summary-total">
+                <span>Grand Total</span>
+                <span class="s-total-amount" id="psb-total">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== STEP 5: Confirmation ===================== -->
+        <div class="step-content" id="step-5">
+          <div class="confirm-wrapper animate-fadeInUp">
+
+            <!-- ── Success Banner ── -->
+            <div class="success-banner animate-fadeInUp">
+              <div class="success-icon-wrap">
+                <div class="success-ring"></div>
+                <div class="success-checkmark">✓</div>
+              </div>
+              <div>
+                <h2 class="text-gradient mb-1">Booking Confirmed!</h2>
+                <p class="text-secondary">Your e-ticket is ready. A copy has been sent to your registered email. 🎉</p>
+              </div>
+            </div>
+
+            <!-- ── PNR Strip ── -->
+            <div class="pnr-strip animate-fadeInUp animate-delay-1">
+              <div>
+                <div class="pnr-strip-label">Booking Reference (PNR)</div>
+                <div class="pnr-number" id="conf-pnr">SPFXXXXX</div>
+              </div>
+              <button class="btn-copy-pnr" onclick="BookingFlow.copyPNR()" title="Copy PNR">📋 Copy PNR</button>
+            </div>
+
+            <!-- ══════════════════════════════════════════ -->
+            <!--          PROFESSIONAL E-TICKET            -->
+            <!-- ══════════════════════════════════════════ -->
+            <div class="eticket animate-fadeInUp animate-delay-2" id="e-ticket">
+
+              <!-- ── Ticket Header ── -->
+              <div class="eticket-receipt-header">
+                <div class="receipt-title">ELECTRONIC TICKET / PASSENGER RECEIPT</div>
+                <div class="receipt-meta">
+                  <span>Booking Status: <strong style="color: #22c55e;">CONFIRMED</strong></span>
+                  <span class="meta-separator">|</span>
+                  <span>Booking Reference (PNR): <strong id="tk-pnr" class="pnr-highlight">—</strong></span>
+                  <span class="meta-separator">|</span>
+                  <span>Date of Issue: <span id="tk-issued-date">—</span></span>
+                </div>
+              </div>
+
+              <!-- ── Section 1: Passenger & Ticket Details ── -->
+              <div class="eticket-receipt-section">
+                <div class="receipt-section-heading">1. Passenger &amp; Ticket Details</div>
+                <div id="tk-passenger-list">
+                  <!-- Generated dynamically in js/booking.js -->
+                </div>
+              </div>
+
+              <!-- ── Section 2: Flight Itinerary ── -->
+              <div class="eticket-receipt-section">
+                <div class="receipt-section-heading">2. Flight Itinerary</div>
+                <table class="receipt-table">
+                  <thead>
+                    <tr>
+                      <th>Flight &amp; Sector</th>
+                      <th>Date &amp; Departure</th>
+                      <th>Arrival Details</th>
+                      <th>Class &amp; Seat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="itinerary-carrier">
+                          <span class="itinerary-carrier-logo" id="tk-airline-logo">✈</span>
+                          <strong id="tk-airline">—</strong>
+                        </div>
+                        <div class="itinerary-flight-code" id="tk-flight-num">—</div>
+                        <div class="itinerary-sector"><span id="tk-origin">—</span> → <span id="tk-dest">—</span></div>
+                        <div class="itinerary-sector-city"><span id="tk-origin-city">—</span> to <span id="tk-dest-city">—</span></div>
+                      </td>
+                      <td>
+                        <div class="itinerary-date" id="tk-date">—</div>
+                        <div class="itinerary-time" id="tk-dep-time">—</div>
+                        <div class="itinerary-terminal" id="tk-origin-terminal">—</div>
+                        <div class="itinerary-airport" id="tk-origin-airport">—</div>
+                      </td>
+                      <td>
+                        <div class="itinerary-date" id="tk-arr-date-placeholder">—</div>
+                        <div class="itinerary-time" id="tk-arr-time">—</div>
+                        <div class="itinerary-terminal" id="tk-dest-terminal">—</div>
+                        <div class="itinerary-airport" id="tk-dest-airport">—</div>
+                      </td>
+                      <td>
+                        <div class="itinerary-class">Class: <strong id="tk-class-code">—</strong></div>
+                        <div class="itinerary-seat">Seat: <strong id="tk-seat-info">—</strong></div>
+                        <div class="itinerary-duration">Duration: <span id="tk-duration">—</span></div>
+                        <div class="itinerary-stops" id="tk-stops">Non-stop</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- ── Section 3: Important Travel Timings ── -->
+              <div class="eticket-receipt-section">
+                <div class="receipt-section-heading">3. Important Travel Timings</div>
+                <ul class="receipt-timings">
+                  <li>
+                    <span>Check-in Counters Open:</span>
+                    <strong><span id="tk-time-checkin">—</span> (<span id="tk-date-checkin">—</span>)</strong>
+                  </li>
+                  <li>
+                    <span>Baggage Drop &amp; Security Closing:</span>
+                    <strong><span id="tk-time-security">—</span> (<span id="tk-date-security">—</span>)</strong>
+                  </li>
+                  <li>
+                    <span>Boarding Gates Close:</span>
+                    <strong class="highlight-red"><span id="tk-time-gate">—</span> (<span id="tk-date-gate">—</span>) — Strictly Enforced</strong>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- ── Section 4: Payment & Fare Summary ── -->
+              <div class="eticket-receipt-section">
+                <div class="receipt-section-heading">4. Payment &amp; Fare Summary (INR)</div>
+                <div class="receipt-payment-grid">
+                  <table class="receipt-fare-table">
+                    <tr>
+                      <td class="lbl">Base Fare:</td>
+                      <td class="val" id="tk-base-fare">—</td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Taxes &amp; Carrier Fees:</td>
+                      <td class="val" id="tk-taxes">—</td>
+                    </tr>
+                    <tr class="total-row">
+                      <td class="lbl">Total Amount Paid:</td>
+                      <td class="val" id="tk-total">—</td>
+                    </tr>
+                  </table>
+                  <div class="receipt-payment-info">
+                    <div><strong>Payment Method:</strong></div>
+                    <div id="tk-payment-method">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Section 5: Terms & Important Reminders ── -->
+              <div class="eticket-receipt-section">
+                <div class="receipt-section-heading">5. Terms &amp; Important Reminders</div>
+                <ul class="receipt-terms">
+                  <li><strong>Requirement of Identification:</strong> Carriage is subject to the DGCA regulations. Passengers must present a valid Government-issued photo identification (Passport, Aadhaar Card, PAN Card, Voter ID, or Driving License) at the airport entry and check-in desk. For international travel, a passport valid for at least 6 months and valid visa are mandatory.</li>
+                  <li><strong>Check-in Deadlines:</strong> Web check-in is recommended and opens 48 hours prior to departure. Check-in desks close exactly 45 minutes before departure for domestic flights and 60 minutes for international. Security gates close 20 minutes prior.</li>
+                  <li><strong>Baggage Restrictions:</strong> Please check your baggage allowance above. Cabin baggage is limited to 1 piece (maximum 7kg, 55x40x20 cm). Dangerous goods like flammable materials, gases, dry cell batteries, explosives, or corrosives are strictly prohibited in check-in and cabin baggage.</li>
+                  <li><strong>No-Show &amp; Cancellations:</strong> Cancellations or changes can be made up to 2 hours before departure for domestic routes. Tickets cancelled inside 2 hours or no-shows are non-refundable. Convenience fee is non-refundable.</li>
+                </ul>
+              </div>
+
+              <!-- ── Footer Message ── -->
+              <div class="eticket-receipt-footer">
+                Thank you for booking with Special Fare. Have a safe and pleasant journey!
+              </div>
+
+            </div><!-- end .eticket -->
+
+            <!-- ── Action Buttons ── -->
+            <div class="eticket-actions animate-fadeInUp animate-delay-3">
+              <button class="btn btn-secondary btn-lg" onclick="BookingFlow.printTicket()">
+                🖨&nbsp; Print Ticket
+              </button>
+              <button class="btn btn-secondary btn-lg" onclick="BookingFlow.printTicket()">
+                ⬇&nbsp; Download PDF
+              </button>
+              <a href="index.html" class="btn btn-primary btn-lg">
+                🏠&nbsp; Back to Home
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- end #booking-steps -->
+    </div><!-- end .booking-wrapper -->
+  </div><!-- end .booking-page -->
+
+  <!-- ── Payment Processing Spinner ── -->
+  <div class="payment-spinner-overlay" id="payment-spinner">
+    <div class="spinner" style="width:56px;height:56px;border-width:4px"></div>
+    <div class="processing-text">🔐 Processing your payment securely...</div>
+    <div style="color:var(--text-muted);font-size:0.85rem">Please do not close this window</div>
+  </div>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ── Scripts ── -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/booking.js"></script>
+</body>
+</html>

@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Special Fare</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    /* ── Admin-specific overrides ── */
+    .admin-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    .admin-navbar-brand .brand-icon {
+      font-size: 1.4rem;
+    }
+    .admin-panel-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #6c5ce7, #a855f7);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .admin-navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .admin-user-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .admin-user-info strong { color: var(--text-primary); }
+
+    /* ── Layout ── */
+    .admin-layout {
+      display: flex;
+      min-height: calc(100vh - 64px);
+    }
+    .admin-sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .admin-sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .admin-sidebar-nav li { padding: 0 1rem; margin-bottom: 4px; }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      user-select: none;
+      position: relative;
+    }
+    .sidebar-nav-item:hover {
+      background: rgba(108, 92, 231, 0.08);
+      color: var(--text-primary);
+    }
+    .sidebar-nav-item.active {
+      background: rgba(108, 92, 231, 0.18);
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+    .sidebar-nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 1rem 1.5rem; }
+    .pending-badge {
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    /* ── Main content ── */
+    .admin-main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      max-width: calc(100vw - 240px);
+    }
+    .admin-panel { display: none; }
+    .panel-header {
+      margin-bottom: 2rem;
+    }
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .panel-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    /* ── Stat cards ── */
+    .stat-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+    }
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .stat-card-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .stat-card-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Charts ── */
+    .chart-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+    }
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    /* ── Tables ── */
+    .table-section {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+      margin-bottom: 1.5rem;
+    }
+    .table-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .table-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .table-count-badge {
+      background: rgba(108,92,231,0.15);
+      color: var(--accent-primary);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .table td {
+      padding: 0.75rem;
+      font-size: 0.87rem;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .table tr:hover td { background: rgba(255,255,255,0.02); }
+    .table-wrapper { overflow-x: auto; }
+
+    /* ── Search / Filters ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 400px;
+    }
+    .search-wrapper .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.6rem 1rem 0.6rem 40px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.87rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent-primary); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    /* ── Filter tabs ── */
+    .filter-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .filter-tab {
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .filter-tab.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+    .filter-tab:hover:not(.active) { color: var(--text-primary); }
+
+    /* ── Settings form ── */
+    .settings-section {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      margin-bottom: 1.5rem;
+    }
+    .settings-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-row-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .range-wrapper input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-primary);
+    }
+    .range-value-label {
+      font-weight: 700;
+      color: var(--accent-primary);
+      min-width: 40px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Inventory form ── */
+    .add-flight-form {
+      background: rgba(108, 92, 231, 0.06);
+      border: 1px solid rgba(108, 92, 231, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .add-flight-form-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: var(--accent-primary);
+    }
+
+    /* ── Inventory summary ── */
+    .generated-summary {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* ── Commission modal slider ── */
+    .commission-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .commission-slider-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-primary);
+      height: 6px;
+    }
+    .commission-display {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent-primary);
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    /* ── Danger zone ── */
+    .danger-zone {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .danger-zone-title {
+      color: #fca5a5;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-content.wide { max-width: 780px; }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.15); color: var(--text-primary); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .admin-sidebar { width: 60px; }
+      .sidebar-nav-item span:not(.nav-icon):not(.pending-badge) { display: none; }
+      .admin-main { max-width: calc(100vw - 60px); padding: 1rem; }
+      .chart-section { grid-template-columns: 1fr; }
+      .form-row-4, .form-row-3, .form-row-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .admin-navbar { padding: 0 1rem; }
+      .admin-sidebar { display: none; }
+      .admin-main { max-width: 100vw; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="admin-navbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="index.html" class="admin-navbar-brand">
+        <span class="brand-icon">✈</span>
+        <span>Special Fare</span>
+      </a>
+      <span class="admin-panel-badge">⚙️ Admin Panel</span>
+    </div>
+    <div class="admin-navbar-right">
+      <div class="admin-user-info">
+        Welcome, <strong id="adminName">Administrator</strong>
+      </div>
+      <button class="btn btn-sm" id="logoutBtn"
+        style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.25)">
+        🚪 Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── MAIN LAYOUT ── -->
+  <div class="admin-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="admin-sidebar">
+      <ul class="admin-sidebar-nav">
+        <li>
+          <div class="sidebar-nav-item active" data-panel="analytics">
+            <span class="nav-icon">📊</span>
+            <span>Analytics</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="inventory">
+            <span class="nav-icon">✈</span>
+            <span>Inventory</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="bookings">
+            <span class="nav-icon">📋</span>
+            <span>All Bookings</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="customers">
+            <span class="nav-icon">👥</span>
+            <span>Customers</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="agents">
+            <span class="nav-icon">🏢</span>
+            <span>Agents</span>
+            <span class="pending-badge" id="pendingAgentsBadge" style="display:none">0</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="extranet">
+            <span class="nav-icon">🔌</span>
+            <span>Extranet</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="customize">
+            <span class="nav-icon">🎨</span>
+            <span>Landing Page</span>
+          </div>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li>
+          <div class="sidebar-nav-item" data-panel="settings">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="admin-main">
+
+      <!-- ════════════════════════ ANALYTICS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-analytics">
+        <div class="panel-header">
+          <div class="panel-title">📊 Analytics Dashboard</div>
+          <div class="panel-subtitle">System overview — bookings, revenue & performance</div>
+        </div>
+
+        <!-- Stat Cards Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:1rem;margin-bottom:1.5rem">
+          <div class="stat-card animate-fadeInUp">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Bookings</span>
+              <div class="stat-card-icon" style="background:rgba(108,92,231,0.15)">📋</div>
+            </div>
+            <div class="stat-card-value" id="statTotalBookings">0</div>
+          </div>
+          <div class="stat-card animate-fadeInUp animate-delay-1">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Confirmed</span>
+              <div class="stat-card-icon" style="background:rgba(34,197,94,0.15)">✅</div>
+            </div>
+            <div class="stat-card-value" id="statConfirmed" style="color:#4ade80">0</div>
+          </div>
+          <div class="stat-card animate-fadeInUp animate-delay-2">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Cancelled</span>
+              <div class="stat-card-icon" style="background:rgba(239,68,68,0.15)">❌</div>
+            </div>
+            <div class="stat-card-value" id="statCancelled" style="color:#f87171">0</div>
+          </div>
+          <div class="stat-card animate-fadeInUp animate-delay-2">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Revenue</span>
+              <div class="stat-card-icon" style="background:rgba(6,182,212,0.15)">💰</div>
+            </div>
+            <div class="stat-card-value" id="statRevenue" style="font-size:1.3rem;color:var(--accent-primary)">₹0</div>
+          </div>
+          <div class="stat-card animate-fadeInUp animate-delay-3">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Agents</span>
+              <div class="stat-card-icon" style="background:rgba(168,85,247,0.15)">🏢</div>
+            </div>
+            <div class="stat-card-value" id="statAgents">0</div>
+          </div>
+          <div class="stat-card animate-fadeInUp animate-delay-3">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Customers</span>
+              <div class="stat-card-icon" style="background:rgba(245,158,11,0.15)">👥</div>
+            </div>
+            <div class="stat-card-value" id="statCustomers">0</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-section">
+          <div class="chart-card">
+            <div class="chart-title">📅 Bookings — Last 7 Days</div>
+            <div id="bookingsBarChart"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">✈️ Revenue by Airline</div>
+            <div id="revenueDonutChart"></div>
+          </div>
+        </div>
+
+        <!-- Popular Routes -->
+        <div class="table-section">
+          <div class="table-section-header">
+            <div class="table-section-title">🔥 Popular Routes</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Bookings</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="popularRoutesBody">
+                <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:2rem">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /analytics -->
+
+      <!-- ════════════════════════ INVENTORY PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-inventory">
+        <div class="panel-header">
+          <div class="panel-title">✈ Flight Inventory Manager</div>
+          <div class="panel-subtitle">Manage custom flights and view generated routes</div>
+        </div>
+
+        <!-- Generated Flights Summary -->
+        <div class="table-section" style="margin-bottom:1.5rem">
+          <div class="table-section-header">
+            <div class="table-section-title">🗓️ System-Generated Flights (Read-only)</div>
+            <span class="table-count-badge"><span id="generatedFlightsTotal">0</span> templates</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.83rem;margin-bottom:1rem">
+            These flights are automatically generated daily from route templates. They cannot be edited here.
+          </p>
+          <div id="generatedFlightsSummary" class="generated-summary"></div>
+        </div>
+
+        <!-- Custom Flights Table -->
+        <div class="table-section">
+          <div class="table-section-header">
+            <div class="table-section-title">🔧 Custom Flights</div>
+            <span class="table-count-badge"><span id="customFlightsCount">0</span> flights</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Flight No.</th>
+                  <th>Date</th>
+                  <th>Departure</th>
+                  <th>Airline</th>
+                  <th>Economy ₹</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customFlightsBody">
+                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add Custom Flight Form -->
+        <div class="add-flight-form">
+          <div class="add-flight-form-title">➕ Add New Custom Flight</div>
+          <form id="addFlightForm" novalidate>
+            <div class="form-row-2" style="margin-bottom:1rem">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Origin Airport *</label>
+                <select id="cfOrigin" class="form-control">
+                  <option value="">Select Origin Airport</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Destination Airport *</label>
+                <select id="cfDestination" class="form-control">
+                  <option value="">Select Destination Airport</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom:1rem">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Flight Number *</label>
+                <input type="text" id="cfFlightNumber" class="form-control" placeholder="e.g. SW-1001" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Airline *</label>
+                <select id="cfAirlineCode" class="form-control">
+                  <option value="">Select Airline</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Flight Date *</label>
+                <input type="date" id="cfDate" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom:1rem">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Departure Time *</label>
+                <input type="time" id="cfDepartureTime" class="form-control" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Duration (minutes) *</label>
+                <input type="number" id="cfDuration" class="form-control" placeholder="e.g. 120" min="30" max="600" value="120" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Stops</label>
+                <select id="cfStops" class="form-control">
+                  <option value="0">Non-stop</option>
+                  <option value="1">1 Stop</option>
+                  <option value="2">2 Stops</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom:1rem">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Economy Price (₹) *</label>
+                <input type="number" id="cfEconomyPrice" class="form-control" placeholder="e.g. 4500" min="100" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Premium Economy (₹)</label>
+                <input type="number" id="cfPremiumPrice" class="form-control" placeholder="Optional" min="0" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Business Price (₹)</label>
+                <input type="number" id="cfBusinessPrice" class="form-control" placeholder="Optional" min="0" />
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom:1.5rem">
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Economy Seats</label>
+                <input type="number" id="cfEconomySeats" class="form-control" placeholder="150" min="1" max="300" value="150" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Premium Economy Seats</label>
+                <input type="number" id="cfPremiumSeats" class="form-control" placeholder="24" min="0" max="50" />
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Business Seats</label>
+                <input type="number" id="cfBusinessSeats" class="form-control" placeholder="12" min="0" max="30" />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:1rem">
+              <button type="submit" class="btn btn-primary">
+                ✈ Add Custom Flight
+              </button>
+              <button type="reset" class="btn btn-secondary">
+                ↺ Reset Form
+              </button>
+            </div>
+          </form>
+        </div>
+      </div><!-- /inventory -->
+
+      <!-- ════════════════════════ ALL BOOKINGS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-bookings">
+        <div class="panel-header">
+          <div class="panel-title">📋 All Bookings</div>
+          <div class="panel-subtitle">View, search and manage all bookings across the platform</div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-header">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="table-section-title">Bookings</div>
+              <span class="table-count-badge" id="bookingsCount">0</span>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="bookingsSearch" placeholder="Search PNR, passenger, route, airline…" />
+            </div>
+            <div class="filter-tabs" id="bookingsFilterTabs">
+              <div class="filter-tab active tab-item" data-filter="all">All</div>
+              <div class="filter-tab tab-item" data-filter="confirmed">Confirmed</div>
+              <div class="filter-tab tab-item" data-filter="cancelled">Cancelled</div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>PNR</th>
+                  <th>Route</th>
+                  <th>Date</th>
+                  <th>Airline</th>
+                  <th>Passengers</th>
+                  <th>Class</th>
+                  <th>Total Fare</th>
+                  <th>Status</th>
+                  <th>Booked At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="allBookingsBody">
+                <tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:2rem">Loading bookings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /bookings -->
+
+      <!-- ════════════════════════ CUSTOMERS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-customers">
+        <div class="panel-header">
+          <div class="panel-title">👥 Customer Management</div>
+          <div class="panel-subtitle">View all registered customers and their booking history</div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-header">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="table-section-title">All Customers</div>
+              <span class="table-count-badge" id="customersCount">0</span>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="customersSearch" placeholder="Search by name, email, phone…" />
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Bookings</th>
+                  <th>Total Spent</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customersBody">
+                <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">Loading customers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /customers -->
+
+      <!-- ════════════════════════ AGENTS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-agents">
+        <div class="panel-header">
+          <div class="panel-title">🏢 Agent Management</div>
+          <div class="panel-subtitle">Approve agents, manage commissions and monitor performance</div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-header">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="table-section-title">All Agents</div>
+              <span class="table-count-badge" id="agentsCount">0</span>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="agentsSearch" placeholder="Search agency, owner, email, city…" />
+            </div>
+            <div class="filter-tabs" id="agentsFilterTabs">
+              <div class="filter-tab tab-item active" data-filter="all">All</div>
+              <div class="filter-tab tab-item" data-filter="pending">Pending</div>
+              <div class="filter-tab tab-item" data-filter="approved">Approved</div>
+              <div class="filter-tab tab-item" data-filter="rejected">Rejected</div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Agency</th>
+                  <th>Owner</th>
+                  <th>Email</th>
+                  <th>City</th>
+                  <th>Status</th>
+                  <th>Bookings</th>
+                  <th>Commission</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="agentsBody">
+                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading agents...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /agents -->
+
+      <!-- ════════════════════════ EXTRANET PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-extranet">
+        <div class="panel-header">
+          <div class="panel-title">🔌 Extranet & Partner Inventory</div>
+          <div class="panel-subtitle">Manage registered suppliers and pre-purchased PNR block allocations</div>
+        </div>
+
+        <div class="table-section">
+          <!-- Toolbar with Tabs -->
+          <div class="table-section-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+            <div class="filter-tabs" id="extranetTabs">
+              <div class="filter-tab active tab-item" data-tab="ext-pnr">🎫 Pre-purchase PNRs</div>
+              <div class="filter-tab tab-item" data-tab="ext-add-pnr">➕ Add PNR Block</div>
+              <div class="filter-tab tab-item" data-tab="ext-suppliers">🏢 Registered Suppliers</div>
+              <div class="filter-tab tab-item" data-tab="ext-group-bookings">📋 Group Bookings</div>
+            </div>
+          </div>
+
+          <!-- TAB 1: Pre-purchase PNRs -->
+          <div class="ext-tab-content active" id="ext-pnr" style="margin-top: 1.5rem;">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>PNR Code</th>
+                    <th>Supplier</th>
+                    <th>Flight Info</th>
+                    <th>Class</th>
+                    <th>Seats (Total/Rem)</th>
+                    <th>Seat Fill</th>
+                    <th>Cost vs Sell</th>
+                    <th>Margin</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="prepurchasedInventoryBody">
+                  <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2rem">Loading pre-purchase inventory...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 2: Add PNR Block Form -->
+          <div class="ext-tab-content" id="ext-add-pnr" style="display:none; margin-top: 1.5rem;">
+            <div class="add-flight-form" style="margin: 0; background: rgba(6,182,212,0.05); border-color: rgba(6,182,212,0.2);">
+              <div class="add-flight-form-title" style="color: var(--accent-secondary);">➕ Allocate Pre-purchased PNR Seat Block</div>
+              <form id="addPrepurchasedForm" novalidate>
+                <div class="form-row-3" style="margin-bottom: 1rem;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">PNR Code *</label>
+                    <input type="text" id="ppPnr" class="form-control" placeholder="e.g. DELBOMGRP99" style="text-transform: uppercase;" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Registered Supplier *</label>
+                    <select id="ppSupplier" class="form-control">
+                      <option value="">Select Supplier</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Airline *</label>
+                    <select id="ppAirlineCode" class="form-control">
+                      <option value="">Select Airline</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-3" style="margin-bottom: 1rem;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Flight Number *</label>
+                    <input type="text" id="ppFlightNumber" class="form-control" placeholder="e.g. 6E-2001" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Origin Airport *</label>
+                    <select id="ppOrigin" class="form-control">
+                      <option value="">Select Origin</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Destination Airport *</label>
+                    <select id="ppDestination" class="form-control">
+                      <option value="">Select Destination</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-2" style="margin-bottom: 1rem;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Flight Date *</label>
+                    <input type="date" id="ppDate" class="form-control" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Cabin Class *</label>
+                    <select id="ppFareClass" class="form-control">
+                      <option value="economy">Economy</option>
+                      <option value="premium_economy">Premium Economy</option>
+                      <option value="business">Business</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-3" style="margin-bottom: 1.5rem;">
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Total Seats Purchased *</label>
+                    <input type="number" id="ppTotalSeats" class="form-control" placeholder="e.g. 30" min="1" max="100" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Cost Price Per Seat (₹) *</label>
+                    <input type="number" id="ppCostPrice" class="form-control" placeholder="e.g. 3000" min="100" />
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label class="form-label">Selling Price Per Seat (₹) *</label>
+                    <input type="number" id="ppSellingPrice" class="form-control" placeholder="e.g. 4500" min="100" />
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:1rem">
+                  <button type="submit" class="btn btn-primary" style="background: var(--accent-gradient);">
+                    🎫 Allocate Group PNR
+                  </button>
+                  <button type="reset" class="btn btn-secondary">
+                    ↺ Reset Form
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB 3: Registered Suppliers -->
+          <div class="ext-tab-content" id="ext-suppliers" style="display:none; margin-top: 1.5rem;">
+            <div class="toolbar" style="margin-bottom: 1.5rem;">
+              <h4 class="table-section-title" style="flex: 1;">🏢 Active Bulk Suppliers</h4>
+              <button class="btn btn-primary btn-sm" onclick="Utils.openModal('addSupplierModal')">➕ Register Supplier</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Supplier Name</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Hub / Location</th>
+                    <th>Stats (Blocks/Seats/Sold)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="suppliersTbody">
+                  <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading suppliers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 4: Group Bookings -->
+          <div class="ext-tab-content" id="ext-group-bookings" style="display:none; margin-top: 1.5rem;">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Group PNR</th>
+                    <th>Booking PNR</th>
+                    <th>Route</th>
+                    <th>Airline</th>
+                    <th>Passengers</th>
+                    <th>Total Fare</th>
+                    <th>Status</th>
+                    <th>Booked At</th>
+                  </tr>
+                </thead>
+                <tbody id="groupBookingsTbody">
+                  <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading group bookings...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /extranet -->
+
+      <!-- ════════════════════════ CUSTOMIZE PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-customize">
+        <div class="panel-header">
+          <div class="panel-title">🎨 Customize Landing Page</div>
+          <div class="panel-subtitle">Edit headings, promotional banner, features list, statistics, and footer details</div>
+        </div>
+
+        <form id="customizeForm" novalidate>
+          <!-- Hero Section -->
+          <div class="settings-section">
+            <div class="settings-section-title">🚀 Hero & Banner Section</div>
+            <div class="form-group">
+              <label class="form-label">Top Promotional Bar Text *</label>
+              <textarea id="customPromoText" class="form-control" rows="2" placeholder="Announce special deals or updates"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Banner Main Title *</label>
+              <input type="text" id="customHeroTitle" class="form-control" placeholder="Main header on the landing page" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Banner Subtitle *</label>
+              <textarea id="customHeroSubtitle" class="form-control" rows="2" placeholder="Describe your service under the main title"></textarea>
+            </div>
+          </div>
+
+          <!-- Statistics Counters -->
+          <div class="settings-section">
+            <div class="settings-section-title">📊 Stats Counters</div>
+            <div class="form-row-4">
+              <div class="form-group">
+                <label class="form-label">Airports Count</label>
+                <input type="number" id="customStatAirports" class="form-control" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Partner Airlines</label>
+                <input type="number" id="customStatAirlines" class="form-control" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Daily Flights</label>
+                <input type="number" id="customStatFlights" class="form-control" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Active Routes</label>
+                <input type="number" id="customStatRoutes" class="form-control" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Cards -->
+          <div class="settings-section">
+            <div class="settings-section-title">⭐ Feature Highlights (Value Propositions)</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+              <!-- Feature 1 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">💰 Feature 1</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat1Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat1Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <!-- Feature 2 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">⚡ Feature 2</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat2Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat2Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <!-- Feature 3 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">🪑 Feature 3</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat3Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat3Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <!-- Feature 4 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">🤝 Feature 4</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat4Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat4Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <!-- Feature 5 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">📱 Feature 5</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat5Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat5Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+              <!-- Feature 6 -->
+              <div class="card-glass" style="padding:1rem; border-radius:12px; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent-secondary)">🔒 Feature 6</div>
+                <div class="form-group">
+                  <label class="form-label">Title</label>
+                  <input type="text" id="customFeat6Title" class="form-control" />
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Description</label>
+                  <textarea id="customFeat6Desc" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Settings -->
+          <div class="settings-section">
+            <div class="settings-section-title">📞 Footer & Contact Coordinates</div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Footer Company Name *</label>
+                <input type="text" id="customFooterCompany" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Support Email Address *</label>
+                <input type="email" id="customFooterEmail" class="form-control" />
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Physical Address *</label>
+                <input type="text" id="customFooterAddress" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Helpline Number *</label>
+                <input type="text" id="customFooterPhone" class="form-control" />
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
+            <button type="submit" class="btn btn-primary btn-lg" style="min-width:200px">
+              💾 Save Customizations
+            </button>
+          </div>
+        </form>
+      </div><!-- /customize -->
+
+      <!-- ════════════════════════ SETTINGS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-settings">
+        <div class="panel-header">
+          <div class="panel-title">⚙️ System Settings</div>
+          <div class="panel-subtitle">Configure pricing, commissions, and platform settings</div>
+        </div>
+
+        <form id="settingsForm" novalidate>
+          <div class="settings-section">
+            <div class="settings-section-title">💸 Pricing Configuration</div>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">GST Rate — Economy (%)</label>
+                <input type="number" id="settingGstEconomy" class="form-control" min="0" max="30" step="0.5" value="5" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">GST Rate — Business (%)</label>
+                <input type="number" id="settingGstBusiness" class="form-control" min="0" max="30" step="0.5" value="12" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Convenience Fee (₹)</label>
+                <input type="number" id="settingConvenienceFee" class="form-control" min="0" max="1000" step="10" value="250" />
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">🤝 Agent Commission Rates</div>
+            <div class="form-group">
+              <label class="form-label">Default Agent Commission (%)</label>
+              <div class="range-wrapper">
+                <input type="range" id="settingDefaultCommission" min="1" max="15" step="0.5" value="5" />
+                <span class="range-value-label" id="defaultCommissionLabel">5%</span>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Minimum Commission (%)</label>
+                <input type="number" id="settingMinCommission" class="form-control" min="0" max="15" step="0.5" value="2" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Maximum Commission (%)</label>
+                <input type="number" id="settingMaxCommission" class="form-control" min="0" max="25" step="0.5" value="12" />
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-title">💳 Smepay Payment Gateway Integration</div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Enable Smepay Gateway</label>
+                <select id="settingSmepayEnabled" class="form-control">
+                  <option value="false">Disabled (Simulated UPI/Card Checkout)</option>
+                  <option value="true">Enabled (Processes via Smepay)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Gateway Mode</label>
+                <select id="settingSmepayMode" class="form-control">
+                  <option value="sandbox">Sandbox (Testing)</option>
+                  <option value="live">Live (Production)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Merchant ID</label>
+                <input type="text" id="settingSmepayMerchantId" class="form-control" placeholder="Enter Smepay Merchant ID" />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">API Key / Secret Token</label>
+                <input type="password" id="settingSmepayApiKey" class="form-control" placeholder="sme_sk_••••••••••••••••" />
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:1.5rem">
+            <button type="submit" class="btn btn-primary btn-lg">
+              💾 Save Settings
+            </button>
+          </div>
+        </form>
+
+        <!-- Announcements -->
+        <div class="settings-section">
+          <div class="settings-section-title">📢 Platform Announcements</div>
+          <div id="announcementsList">
+            <p style="color:var(--text-muted);font-size:0.88rem">Loading announcements...</p>
+          </div>
+          <div style="display:flex;gap:0.75rem;margin-top:1rem">
+            <input type="text" id="announcementInput" class="form-control" placeholder="Type new announcement text…" style="flex:1" />
+            <button class="btn btn-primary" id="addAnnouncementBtn">📢 Add</button>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+          <div class="danger-zone-title">🚨 Danger Zone</div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">
+            Resetting all data will remove all bookings, agents, customers and restore demo data. This action is <strong style="color:#fca5a5">irreversible</strong>.
+          </p>
+          <button class="btn" id="resetDataBtn"
+            style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.35)">
+            🗑️ Reset All Data
+          </button>
+        </div>
+      </div><!-- /settings -->
+
+    </main>
+  </div><!-- /admin-layout -->
+
+  <!-- ════════════════════════ MODALS ════════════════════════ -->
+
+  <!-- Cancel Booking Confirm Modal -->
+  <div class="modal-overlay" id="cancelConfirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✕ Cancel Booking</div>
+        <button class="modal-close" onclick="Utils.closeModal('cancelConfirmModal')">✕</button>
+      </div>
+      <div style="text-align:center;padding:1rem 0">
+        <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
+        <p style="font-size:1rem;margin-bottom:0.5rem">
+          Are you sure you want to cancel booking
+          <strong style="color:var(--accent-primary)" id="cancelBookingPNR">—</strong>?
+        </p>
+        <p style="color:var(--text-muted);font-size:0.87rem;margin-bottom:2rem">
+          This action will mark the booking as cancelled. This cannot be undone.
+        </p>
+        <div style="display:flex;gap:1rem;justify-content:center">
+          <button class="btn btn-secondary" onclick="Utils.closeModal('cancelConfirmModal')">Go Back</button>
+          <button class="btn" id="confirmCancelBtn"
+            style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4)">
+            ✕ Yes, Cancel Booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Detail Modal -->
+  <div class="modal-overlay" id="bookingDetailModal">
+    <div class="modal-content wide">
+      <div class="modal-header">
+        <div class="modal-title">📋 Booking Details</div>
+        <button class="modal-close" onclick="Utils.closeModal('bookingDetailModal')">✕</button>
+      </div>
+      <div id="bookingDetailContent">
+        <p style="text-align:center;color:var(--text-muted)">Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commission Edit Modal -->
+  <div class="modal-overlay" id="commissionModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Edit Commission Rate</div>
+        <button class="modal-close" onclick="Utils.closeModal('commissionModal')">✕</button>
+      </div>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.5rem">
+        Updating commission for:
+      </p>
+      <p style="font-weight:700;margin-bottom:1rem" id="commissionAgentName">—</p>
+
+      <div class="commission-display">
+        <span id="commissionValue">5%</span>
+      </div>
+
+      <div class="commission-slider-row">
+        <span style="color:var(--text-muted);font-size:0.82rem;white-space:nowrap">2%</span>
+        <input type="range" id="commissionSlider" min="2" max="12" step="0.5" value="5" />
+        <span style="color:var(--text-muted);font-size:0.82rem;white-space:nowrap">12%</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:6px;margin-bottom:1.5rem">
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('commissionSlider').value=2;document.getElementById('commissionValue').textContent='2%'">2%</button>
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('commissionSlider').value=4;document.getElementById('commissionValue').textContent='4%'">4%</button>
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('commissionSlider').value=6;document.getElementById('commissionValue').textContent='6%'">6%</button>
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('commissionSlider').value=8;document.getElementById('commissionValue').textContent='8%'">8%</button>
+        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('commissionSlider').value=10;document.getElementById('commissionValue').textContent='10%'">10%</button>
+      </div>
+
+      <div style="display:flex;gap:1rem">
+        <button class="btn btn-secondary" onclick="Utils.closeModal('commissionModal')" style="flex:1">Cancel</button>
+        <button class="btn btn-primary" id="saveCommissionBtn" style="flex:1">💾 Save Commission</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Data Confirm Modal -->
+  <div class="modal-overlay" id="resetConfirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">🚨 Reset All Data</div>
+        <button class="modal-close" onclick="Utils.closeModal('resetConfirmModal')">✕</button>
+      </div>
+      <div style="text-align:center;padding:1rem 0">
+        <div style="font-size:3rem;margin-bottom:1rem">💣</div>
+        <p style="font-size:0.95rem;margin-bottom:0.5rem;font-weight:600;color:#fca5a5">
+          This will permanently delete ALL platform data!
+        </p>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.5rem">
+          All bookings, agents, customers, custom flights and settings will be erased and reset to demo defaults.
+        </p>
+        <div class="form-group" style="text-align:left;margin-bottom:1.5rem">
+          <label class="form-label" style="color:#fca5a5">Type <strong>RESET</strong> to confirm:</label>
+          <input type="text" id="resetConfirmInput" class="form-control" placeholder='Type "RESET" here' autocomplete="off" />
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:center">
+          <button class="btn btn-secondary" onclick="Utils.closeModal('resetConfirmModal')">Cancel</button>
+          <button class="btn" id="confirmResetBtn"
+            style="background:rgba(239,68,68,0.25);color:#fca5a5;border:1px solid rgba(239,68,68,0.5)">
+            💣 Reset Everything
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Supplier Modal -->
+  <div class="modal-overlay" id="addSupplierModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">🏢 Register New Bulk Supplier</div>
+        <button class="modal-close" onclick="Utils.closeModal('addSupplierModal')">✕</button>
+      </div>
+      <form id="addSupplierForm" novalidate>
+        <div class="form-group">
+          <label class="form-label">Agency / Supplier Name *</label>
+          <input type="text" id="supName" class="form-control" placeholder="e.g. Air Travels Supplier" />
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" id="supEmail" class="form-control" placeholder="contact@supplier.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" id="supPhone" class="form-control" placeholder="10-digit mobile" maxlength="10" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">City *</label>
+            <input type="text" id="supCity" class="form-control" placeholder="Gurugram" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">State *</label>
+            <input type="text" id="supState" class="form-control" placeholder="Haryana" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">PAN Card Number *</label>
+            <input type="text" id="supPAN" class="form-control" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address *</label>
+            <input type="text" id="supAddress" class="form-control" placeholder="Complete address" />
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="Utils.closeModal('addSupplierModal')" style="flex:1">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">🏢 Register Supplier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Supplier Modal -->
+  <div class="modal-overlay" id="editSupplierModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Edit Supplier Coordinates</div>
+        <button class="modal-close" onclick="Utils.closeModal('editSupplierModal')">✕</button>
+      </div>
+      <form id="editSupplierForm" novalidate>
+        <input type="hidden" id="editSupId" />
+        <div class="form-group">
+          <label class="form-label">Agency / Supplier Name *</label>
+          <input type="text" id="editSupName" class="form-control" />
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" id="editSupEmail" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" id="editSupPhone" class="form-control" maxlength="10" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">City *</label>
+            <input type="text" id="editSupCity" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">State *</label>
+            <input type="text" id="editSupState" class="form-control" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">PAN Card Number *</label>
+            <input type="text" id="editSupPAN" class="form-control" maxlength="10" style="text-transform:uppercase;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address *</label>
+            <input type="text" id="editSupAddress" class="form-control" />
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="Utils.closeModal('editSupplierModal')" style="flex:1">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Adjust B2B Wallet Modal -->
+  <div class="modal-overlay" id="walletAdjustModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">💰 Adjust Agent Wallet Balance</div>
+        <button class="modal-close" onclick="Utils.closeModal('walletAdjustModal')">✕</button>
+      </div>
+      <form id="walletAdjustForm" novalidate>
+        <input type="hidden" id="adjustAgentId" />
+        <div class="form-group">
+          <label class="form-label">Agency / Agent Name</label>
+          <input type="text" id="adjustAgentName" class="form-control" readonly style="background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.06); cursor:not-allowed;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Balance</label>
+          <div style="font-size:1.5rem; font-weight:800; color:var(--accent-secondary); margin-bottom:1rem;" id="adjustCurrentBalance">₹0</div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Adjustment Type *</label>
+            <select id="adjustType" class="form-control">
+              <option value="credit">Credit (Add Funds)</option>
+              <option value="debit">Debit (Deduct Funds)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount (₹) *</label>
+            <input type="number" id="adjustAmount" class="form-control" placeholder="e.g. 5000" min="1" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remarks / Description *</label>
+          <input type="text" id="adjustDescription" class="form-control" placeholder="e.g. B2B deposit ref #998877" required />
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="Utils.closeModal('walletAdjustModal')" style="flex:1">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">💾 Submit Adjustment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Flights — Special Fare</title>
+  <meta name="description" content="Search and compare flights across Indian destinations. Find the cheapest, fastest and best value flights with Special Fare." />
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    /* ── Search Page Specific Styles ── */
+    .search-page {
+      padding-top: 70px;
+      min-height: 100vh;
+    }
+
+    /* Search Summary Bar */
+    .search-summary-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      position: sticky;
+      top: 70px;
+      z-index: 150;
+    }
+
+    .search-summary-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .search-summary-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      flex-wrap: wrap;
+    }
+
+    .search-summary-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .search-summary-route .arrow {
+      color: var(--accent-primary);
+    }
+
+    .search-summary-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .summary-count {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Inline Modify Search */
+    .modify-search-panel {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+    }
+
+    .modify-search-panel.open {
+      max-height: 220px;
+      padding: var(--space-lg) 0;
+    }
+
+    .modify-search-panel .container {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    /* Quick Filter Tabs */
+    .quick-filter-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .quick-tab {
+      padding: var(--space-md);
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+      text-align: left;
+      font-family: var(--font-primary);
+    }
+
+    .quick-tab:hover {
+      background: var(--bg-glass-hover);
+      border-color: rgba(108, 92, 231, 0.2);
+    }
+
+    .quick-tab.active {
+      border-color: var(--accent-primary);
+      background: rgba(108, 92, 231, 0.1);
+      box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.2);
+    }
+
+    .quick-tab-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .quick-tab.active .quick-tab-label {
+      color: var(--accent-primary);
+    }
+
+    .quick-tab-price {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .quick-tab-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Flight Card Premium */
+    .flight-result-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      transition: var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .flight-result-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--airline-color, var(--accent-primary));
+      border-radius: 3px 0 0 3px;
+      opacity: 0;
+      transition: var(--transition-base);
+    }
+
+    .flight-result-card:hover {
+      border-color: rgba(108, 92, 231, 0.3);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), var(--shadow-glow);
+      transform: translateY(-2px);
+    }
+
+    .flight-result-card:hover::before {
+      opacity: 1;
+    }
+
+    .flight-result-card.cheapest-card {
+      border-color: rgba(34, 197, 94, 0.25);
+    }
+
+    .flight-result-card.fastest-card {
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+
+    .card-badges {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      display: flex;
+      gap: var(--space-xs);
+      z-index: 2;
+    }
+
+    .badge-cheapest {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .badge-fastest {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .badge-best {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+
+    .card-main {
+      padding: var(--space-lg);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-lg);
+    }
+
+    /* Airline Identity */
+    .airline-identity {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      min-width: 160px;
+    }
+
+    .airline-logo-box {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .airline-logo-box::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--airline-color, transparent);
+      opacity: 0.08;
+    }
+
+    .airline-identity-info .airline-name-text {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .airline-identity-info .flight-number {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .rating-stars {
+      font-size: 0.7rem;
+      color: var(--warning);
+      margin-top: 3px;
+    }
+
+    /* Route Visual */
+    .route-visual {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: 0 var(--space-md);
+    }
+
+    .route-endpoint {
+      text-align: center;
+      min-width: 70px;
+    }
+
+    .route-time-big {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .route-airport-code {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .route-city-small {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .route-timeline {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .route-duration-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .route-line-track {
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .route-line-track::before {
+      content: '✈';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.9rem;
+      color: var(--accent-primary);
+      background: var(--bg-primary);
+      padding: 0 6px;
+    }
+
+    .route-stops-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    .route-stops-label.has-stops {
+      color: var(--warning);
+    }
+
+    /* Fare Classes Row */
+    .fare-classes-row {
+      padding: 0 var(--space-lg) var(--space-md);
+      display: flex;
+      gap: var(--space-sm);
+      border-top: 1px solid var(--border-light);
+      padding-top: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    .fare-class-btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-base);
+      font-family: var(--font-primary);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .fare-class-btn:hover {
+      background: var(--bg-glass-hover);
+      border-color: rgba(108, 92, 231, 0.3);
+    }
+
+    .fare-class-btn.selected-class {
+      border-color: var(--accent-primary);
+      background: rgba(108, 92, 231, 0.1);
+    }
+
+    .fare-class-name {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 3px;
+    }
+
+    .fare-class-price {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .fare-class-seats {
+      font-size: 0.68rem;
+      margin-top: 2px;
+    }
+
+    .seats-high { color: var(--success); }
+    .seats-mid { color: var(--warning); }
+    .seats-low { color: var(--danger); }
+
+    /* Book Now Overlay */
+    .book-now-overlay {
+      position: absolute;
+      right: var(--space-lg);
+      top: 50%;
+      transform: translateY(-50%) translateX(10px);
+      opacity: 0;
+      transition: var(--transition-base);
+      pointer-events: none;
+    }
+
+    .flight-result-card:hover .book-now-overlay {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+      pointer-events: auto;
+    }
+
+    /* Price block (right side) */
+    .card-price-block {
+      text-align: right;
+      min-width: 130px;
+    }
+
+    .card-price-from {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 2px;
+    }
+
+    .card-price-main {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .card-price-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .card-book-btn {
+      margin-top: var(--space-sm);
+      width: 100%;
+    }
+
+    /* Filter Section */
+    .filter-group-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .filter-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .time-slot-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xs);
+    }
+
+    .time-slot-btn {
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-family: var(--font-primary);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .time-slot-btn:hover {
+      background: var(--bg-glass-hover);
+    }
+
+    .time-slot-btn.active {
+      background: rgba(108, 92, 231, 0.15);
+      border-color: rgba(108, 92, 231, 0.4);
+      color: var(--accent-primary);
+    }
+
+    .price-range-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+      font-weight: 600;
+    }
+
+    /* Skeleton */
+    .skeleton-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-md);
+    }
+
+    /* Agent markup notice */
+    .agent-markup-notice {
+      padding: 10px 14px;
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.2);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      color: #c084fc;
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    /* Sidebar header */
+    .filter-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-sidebar-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* No results */
+    .no-results {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg);
+      display: none;
+    }
+
+    .no-results.visible {
+      display: block;
+    }
+
+    .no-results-icon {
+      font-size: 4.5rem;
+      margin-bottom: var(--space-lg);
+      opacity: 0.25;
+    }
+
+    .no-results-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: var(--space-sm);
+    }
+
+    .no-results-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 360px;
+      margin: 0 auto var(--space-lg);
+    }
+
+    /* Layout adjustments */
+    .results-area {
+      position: relative;
+    }
+
+    /* Sort bar improvement */
+    .sort-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .sort-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1024px) {
+      .search-layout {
+        grid-template-columns: 1fr;
+      }
+      .filter-sidebar {
+        position: static;
+        margin-bottom: var(--space-lg);
+      }
+      .time-slot-btns {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .card-main {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }
+      .airline-identity {
+        min-width: unset;
+      }
+      .card-price-block {
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+      }
+      .search-summary-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+      }
+      .quick-filter-tabs {
+        grid-template-columns: 1fr;
+      }
+      .book-now-overlay {
+        position: static;
+        opacity: 1;
+        transform: none;
+        margin-top: var(--space-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <div class="brand-icon">✈</div>
+        Special Fare
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="search.html" class="active">Search Flights</a></li>
+        <li><a href="agent-login.html">Agent Portal</a></li>
+        <li><a href="admin-login.html">Admin</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div id="nav-session-area"></div>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Search Summary Bar ── -->
+  <div class="search-summary-bar" id="search-summary-bar">
+    <div class="container">
+      <div class="search-summary-inner">
+        <div class="search-summary-info">
+          <div class="search-summary-route">
+            <span id="sum-from">DEL</span>
+            <span class="arrow">→</span>
+            <span id="sum-to">BOM</span>
+          </div>
+          <div class="search-summary-meta">
+            <span class="summary-chip">📅 <span id="sum-date">—</span></span>
+            <span class="summary-chip">👤 <span id="sum-pax">1</span> Passenger</span>
+            <span class="summary-chip">💺 <span id="sum-class">Economy</span></span>
+          </div>
+          <span class="summary-count" id="sum-count">Loading...</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="modify-toggle-btn" onclick="toggleModifySearch()">
+          ✏️ Modify Search
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Inline Modify Search Form ── -->
+  <div class="modify-search-panel" id="modify-search-panel">
+    <div class="container">
+      <div class="search-fields">
+        <div class="search-field relative">
+          <label>From</label>
+          <span class="field-icon">🛫</span>
+          <input type="text" id="mod-from" class="form-control" placeholder="Origin airport" autocomplete="off" />
+          <div class="autocomplete-dropdown" id="mod-from-dropdown"></div>
+        </div>
+        <div class="search-field relative">
+          <label>To</label>
+          <span class="field-icon">🛬</span>
+          <input type="text" id="mod-to" class="form-control" placeholder="Destination airport" autocomplete="off" />
+          <div class="autocomplete-dropdown" id="mod-to-dropdown"></div>
+        </div>
+        <div class="search-field">
+          <label>Date</label>
+          <span class="field-icon">📅</span>
+          <input type="date" id="mod-date" class="form-control" />
+        </div>
+        <div class="search-field">
+          <label>Passengers</label>
+          <span class="field-icon">👤</span>
+          <select id="mod-passengers" class="form-control">
+            <option value="1">1 Passenger</option>
+            <option value="2">2 Passengers</option>
+            <option value="3">3 Passengers</option>
+            <option value="4">4 Passengers</option>
+            <option value="5">5 Passengers</option>
+            <option value="6">6 Passengers</option>
+          </select>
+        </div>
+        <div class="search-field">
+          <label>Class</label>
+          <span class="field-icon">💺</span>
+          <select id="mod-class" class="form-control">
+            <option value="economy">Economy</option>
+            <option value="premium_economy">Premium Economy</option>
+            <option value="business">Business</option>
+          </select>
+        </div>
+        <div class="search-field" style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary search-btn w-full" onclick="modifySearch()" style="height:50px;">
+            🔍 Search
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content ── -->
+  <main class="search-page">
+    <div class="container" style="padding-top: var(--space-xl); padding-bottom: var(--space-3xl);">
+
+      <!-- Agent Markup Notice -->
+      <div class="agent-markup-notice hidden" id="agent-notice">
+        🏷️ <strong>Agent View:</strong> Prices include your markup. Commission will be credited after booking.
+      </div>
+
+      <!-- Search Layout -->
+      <div class="search-layout">
+
+        <!-- ── LEFT SIDEBAR ── -->
+        <aside class="filter-sidebar" id="filter-sidebar">
+          <div class="filter-sidebar-header">
+            <span class="filter-sidebar-title">🔧 Filters</span>
+            <button class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
+          </div>
+
+          <!-- Price Range -->
+          <div class="filter-section">
+            <div class="filter-group-title">💰 Price Range</div>
+            <div class="price-range-display">
+              <span id="price-min-display">₹0</span>
+              <span id="price-max-display">₹20,000</span>
+            </div>
+            <input type="range" class="range-slider" id="price-min-slider" min="0" max="30000" value="0" step="50" oninput="onPriceRangeChange()" />
+            <input type="range" class="range-slider" id="price-max-slider" min="0" max="30000" value="30000" step="50" oninput="onPriceRangeChange()" />
+          </div>
+
+          <!-- Airlines -->
+          <div class="filter-section">
+            <div class="filter-group-title">✈ Airlines</div>
+            <div class="filter-options-list" id="airline-filter-list">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Departure Time -->
+          <div class="filter-section">
+            <div class="filter-group-title">🕐 Departure Time</div>
+            <div class="time-slot-btns">
+              <button class="time-slot-btn" data-slot="early" onclick="toggleTimeSlot(this)">
+                🌅 Early<br/><span style="font-size:0.7rem;opacity:0.7">5–9 AM</span>
+              </button>
+              <button class="time-slot-btn" data-slot="morning" onclick="toggleTimeSlot(this)">
+                ☀️ Morning<br/><span style="font-size:0.7rem;opacity:0.7">9–12 PM</span>
+              </button>
+              <button class="time-slot-btn" data-slot="afternoon" onclick="toggleTimeSlot(this)">
+                🌤 Afternoon<br/><span style="font-size:0.7rem;opacity:0.7">12–5 PM</span>
+              </button>
+              <button class="time-slot-btn" data-slot="evening" onclick="toggleTimeSlot(this)">
+                🌙 Evening<br/><span style="font-size:0.7rem;opacity:0.7">5 PM+</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Stops -->
+          <div class="filter-section">
+            <div class="filter-group-title">🛑 Stops</div>
+            <div class="filter-options-list">
+              <label class="form-check">
+                <input type="checkbox" id="stop-nonstop" onchange="applyFilters()" checked />
+                <span>Non-stop</span>
+              </label>
+              <label class="form-check">
+                <input type="checkbox" id="stop-1" onchange="applyFilters()" checked />
+                <span>1 Stop</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="filter-section">
+            <div class="filter-group-title">⏱ Max Duration</div>
+            <div class="price-range-display">
+              <span>0 min</span>
+              <span id="duration-display">Any</span>
+            </div>
+            <input type="range" class="range-slider" id="duration-slider" min="30" max="600" value="600" step="10" oninput="onDurationChange()" />
+          </div>
+
+          <!-- Fare Class Filter -->
+          <div class="filter-section">
+            <div class="filter-group-title">💺 Fare Class</div>
+            <div class="filter-options-list">
+              <label class="form-check">
+                <input type="checkbox" id="class-economy" onchange="applyFilters()" checked />
+                <span>Economy</span>
+              </label>
+              <label class="form-check">
+                <input type="checkbox" id="class-premium" onchange="applyFilters()" checked />
+                <span>Premium Economy</span>
+              </label>
+              <label class="form-check">
+                <input type="checkbox" id="class-business" onchange="applyFilters()" checked />
+                <span>Business</span>
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── RIGHT RESULTS AREA ── -->
+        <div class="results-area">
+
+          <!-- Quick Filter Tabs -->
+          <div class="quick-filter-tabs" id="quick-filter-tabs">
+            <button class="quick-tab active" data-qfilter="cheapest" onclick="setQuickFilter('cheapest', this)">
+              <div class="quick-tab-label">💸 Cheapest</div>
+              <div class="quick-tab-price" id="qt-cheapest-price">—</div>
+              <div class="quick-tab-sub" id="qt-cheapest-sub">Loading...</div>
+            </button>
+            <button class="quick-tab" data-qfilter="fastest" onclick="setQuickFilter('fastest', this)">
+              <div class="quick-tab-label">⚡ Fastest</div>
+              <div class="quick-tab-price" id="qt-fastest-price">—</div>
+              <div class="quick-tab-sub" id="qt-fastest-sub">Loading...</div>
+            </button>
+            <button class="quick-tab" data-qfilter="best" onclick="setQuickFilter('best', this)">
+              <div class="quick-tab-label">⭐ Best Value</div>
+              <div class="quick-tab-price" id="qt-best-price">—</div>
+              <div class="quick-tab-sub" id="qt-best-sub">Loading...</div>
+            </button>
+          </div>
+
+          <!-- Sort Bar -->
+          <div class="sort-bar mb-3">
+            <div class="sort-bar-inner">
+              <div class="flex items-center gap-sm">
+                <span class="sort-label">Sort by:</span>
+                <div class="sort-options">
+                  <button class="sort-option active" data-sort="price" onclick="setSort('price', this)">Price ↑</button>
+                  <button class="sort-option" data-sort="duration" onclick="setSort('duration', this)">Duration</button>
+                  <button class="sort-option" data-sort="departure" onclick="setSort('departure', this)">Departure</button>
+                  <button class="sort-option" data-sort="arrival" onclick="setSort('arrival', this)">Arrival</button>
+                </div>
+              </div>
+              <span class="results-count" id="results-count">— flights found</span>
+            </div>
+          </div>
+
+          <!-- Flight Cards Container -->
+          <div id="results-container">
+            <!-- Skeleton Loading Cards -->
+            <div class="skeleton-card animate-fadeIn" id="skel-1">
+              <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+                <div class="skeleton" style="width:48px;height:48px;border-radius:12px;flex-shrink:0;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-title" style="width:40%;"></div>
+                  <div class="skeleton skeleton-text" style="width:25%;"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:16px;margin-bottom:16px;">
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+                <div style="flex:1;"><div class="skeleton" style="height:4px;margin-top:18px;"></div></div>
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-card animate-fadeIn animate-delay-2" id="skel-2">
+              <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+                <div class="skeleton" style="width:48px;height:48px;border-radius:12px;flex-shrink:0;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-title" style="width:35%;"></div>
+                  <div class="skeleton skeleton-text" style="width:20%;"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:16px;margin-bottom:16px;">
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+                <div style="flex:1;"><div class="skeleton" style="height:4px;margin-top:18px;"></div></div>
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+              </div>
+            </div>
+            <div class="skeleton-card animate-fadeIn animate-delay-3" id="skel-3">
+              <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+                <div class="skeleton" style="width:48px;height:48px;border-radius:12px;flex-shrink:0;"></div>
+                <div style="flex:1;">
+                  <div class="skeleton skeleton-title" style="width:45%;"></div>
+                  <div class="skeleton skeleton-text" style="width:30%;"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:16px;margin-bottom:16px;">
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+                <div style="flex:1;"><div class="skeleton" style="height:4px;margin-top:18px;"></div></div>
+                <div class="skeleton" style="width:70px;height:40px;border-radius:8px;"></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+                <div class="skeleton" style="flex:1;height:56px;border-radius:10px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Results -->
+          <div class="no-results" id="no-results">
+            <div class="no-results-icon">✈️</div>
+            <div class="no-results-title">No Flights Found</div>
+            <p class="no-results-sub">
+              We couldn't find flights matching your criteria. Try adjusting your filters or choose a different date.
+            </p>
+            <button class="btn btn-primary" onclick="resetFilters()">Clear Filters</button>
+            <a href="index.html" class="btn btn-secondary" style="margin-left:8px;">New Search</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>

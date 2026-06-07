@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supplier Dashboard — Special Fare Extranet</title>
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    /* ── Supplier Dashboard CSS styles ── */
+    .admin-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    .admin-navbar-brand .brand-icon {
+      font-size: 1.4rem;
+    }
+    .admin-panel-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .admin-navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .admin-user-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .admin-user-info strong { color: var(--text-primary); }
+
+    /* Layout */
+    .admin-layout {
+      display: flex;
+      min-height: calc(100vh - 64px);
+    }
+    .admin-sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .admin-sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .admin-sidebar-nav li { padding: 0 1rem; margin-bottom: 4px; }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      user-select: none;
+      position: relative;
+    }
+    .sidebar-nav-item:hover {
+      background: rgba(6, 182, 212, 0.08);
+      color: var(--text-primary);
+    }
+    .sidebar-nav-item.active {
+      background: rgba(6, 182, 212, 0.18);
+      color: var(--accent-secondary);
+      font-weight: 700;
+    }
+    .sidebar-nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    /* Main content */
+    .admin-main {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      max-width: calc(100vw - 240px);
+    }
+    .admin-panel { display: none; }
+    .panel-header {
+      margin-bottom: 2rem;
+    }
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .panel-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    /* Stat cards */
+    .stat-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+    }
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .stat-card-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .stat-card-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    /* Tables */
+    .table-section {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+      margin-bottom: 1.5rem;
+    }
+    .table-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .table-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .table-count-badge {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-secondary);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .table td {
+      padding: 0.75rem;
+      font-size: 0.87rem;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .table tr:hover td { background: rgba(255,255,255,0.02); }
+    .table-wrapper { overflow-x: auto; }
+
+    /* Forms */
+    .add-flight-form {
+      background: rgba(6, 182, 212, 0.05);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .add-flight-form-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: var(--accent-secondary);
+    }
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-content.wide { max-width: 780px; }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--text-muted);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.15); color: var(--text-primary); }
+
+    /* Chart placement */
+    .chart-card {
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      backdrop-filter: blur(12px);
+      margin-bottom: 1.5rem;
+    }
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar { width: 60px; }
+      .sidebar-nav-item span:not(.nav-icon) { display: none; }
+      .admin-main { max-width: calc(100vw - 60px); padding: 1rem; }
+      .form-row-3, .form-row-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .admin-sidebar { display: none; }
+      .admin-main { max-width: 100vw; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="admin-navbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <a href="index.html" class="admin-navbar-brand">
+        <span class="brand-icon">✈</span>
+        <span>Special Fare</span>
+      </a>
+      <span class="admin-panel-badge">🔌 Supplier Extranet</span>
+    </div>
+    <div class="admin-navbar-right">
+      <div class="admin-user-info">
+        Logged in: <strong id="supplierName">Supplier Partner</strong>
+      </div>
+      <button class="btn btn-sm" id="logoutBtn"
+        style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.25)">
+        🚪 Logout
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── MAIN LAYOUT ── -->
+  <div class="admin-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="admin-sidebar">
+      <ul class="admin-sidebar-nav">
+        <li>
+          <div class="sidebar-nav-item active" data-panel="overview">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="deploy">
+            <span class="nav-icon">➕</span>
+            <span>Deploy Inventory</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="inventory">
+            <span class="nav-icon">🎫</span>
+            <span>My Inventory</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="bookings">
+            <span class="nav-icon">📋</span>
+            <span>Booking History</span>
+          </div>
+        </li>
+        <li>
+          <div class="sidebar-nav-item" data-panel="profile">
+            <span class="nav-icon">👤</span>
+            <span>Profile</span>
+          </div>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="admin-main">
+
+      <!-- ════════════════════════ OVERVIEW PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-overview">
+        <div class="panel-header">
+          <div class="panel-title">📊 Extranet Overview</div>
+          <div class="panel-subtitle">Real-time stats for your allocated PNR blocks and booking conversions</div>
+        </div>
+
+        <!-- Stat Cards Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:1rem;margin-bottom:1.5rem">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Seat Blocks</span>
+              <div class="stat-card-icon" style="background:rgba(6,182,212,0.15)">🎫</div>
+            </div>
+            <div class="stat-card-value" id="statTotalBlocks">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Seats</span>
+              <div class="stat-card-icon" style="background:rgba(108,92,231,0.15)">💺</div>
+            </div>
+            <div class="stat-card-value" id="statTotalSeats">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Seats Sold</span>
+              <div class="stat-card-icon" style="background:rgba(34,197,94,0.15)">✅</div>
+            </div>
+            <div class="stat-card-value" id="statSeatsSold" style="color:#4ade80">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Total Sales Revenue</span>
+              <div class="stat-card-icon" style="background:rgba(245,158,11,0.15)">💰</div>
+            </div>
+            <div class="stat-card-value" id="statRevenue" style="font-size:1.3rem;color:var(--accent-secondary)">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Net Cost Price</span>
+              <div class="stat-card-icon" style="background:rgba(239,68,68,0.15)">💵</div>
+            </div>
+            <div class="stat-card-value" id="statCost" style="font-size:1.3rem;color:var(--text-muted)">₹0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label">Estimated Margin</span>
+              <div class="stat-card-icon" style="background:rgba(168,85,247,0.15)">📈</div>
+            </div>
+            <div class="stat-card-value" id="statMargin" style="font-size:1.3rem;color:#4ade80">₹0</div>
+          </div>
+        </div>
+
+        <!-- Sales Chart -->
+        <div class="chart-card">
+          <div class="chart-title">📈 Seats Filled per Block PNR</div>
+          <div id="blocksFillChart"></div>
+        </div>
+      </div><!-- /overview -->
+
+      <!-- ════════════════════════ DEPLOY PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-deploy">
+        <div class="panel-header">
+          <div class="panel-title">➕ Deploy Inventory Blocks</div>
+          <div class="panel-subtitle">Upload pre-purchased bulk seat blocks to distribute via the B2C & B2B channels</div>
+        </div>
+
+        <div class="add-flight-form">
+          <div class="add-flight-form-title">🎫 Allocate New Pre-purchased PNR Seat Block</div>
+          <form id="deployForm" novalidate>
+            <div class="form-row-3" style="margin-bottom: 1rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">PNR Code *</label>
+                <input type="text" id="ppPnr" class="form-control" placeholder="e.g. SPJDELBOM99" style="text-transform: uppercase;" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Airline *</label>
+                <select id="ppAirlineCode" class="form-control">
+                  <option value="">Select Airline</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Flight Number *</label>
+                <input type="text" id="ppFlightNumber" class="form-control" placeholder="e.g. SG-8101" />
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom: 1rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Origin Airport *</label>
+                <select id="ppOrigin" class="form-control">
+                  <option value="">Select Origin</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Destination Airport *</label>
+                <select id="ppDestination" class="form-control">
+                  <option value="">Select Destination</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Flight Date *</label>
+                <input type="date" id="ppDate" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-row-3" style="margin-bottom: 1.5rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Cabin Class *</label>
+                <select id="ppFareClass" class="form-control">
+                  <option value="economy">Economy</option>
+                  <option value="premium_economy">Premium Economy</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Total Seats Count *</label>
+                <input type="number" id="ppTotalSeats" class="form-control" placeholder="e.g. 30" min="1" max="100" />
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Cost Price Per Seat (₹) *</label>
+                <input type="number" id="ppCostPrice" class="form-control" placeholder="e.g. 3200" min="100" />
+              </div>
+            </div>
+
+            <div class="form-row-2" style="margin-bottom: 1.5rem;">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Selling Price Per Seat (₹) *</label>
+                <input type="number" id="ppSellingPrice" class="form-control" placeholder="e.g. 4500" min="100" />
+              </div>
+              <div class="form-group" style="margin:0; display:flex; align-items:flex-end;">
+                <button type="submit" class="btn btn-primary" style="width:100%; height:42px; background: var(--accent-secondary); border-color: var(--accent-secondary);">
+                  🎫 Deploy Group PNR Block
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div><!-- /deploy -->
+
+      <!-- ════════════════════════ INVENTORY PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-inventory">
+        <div class="panel-header">
+          <div class="panel-title">🎫 Manage Allocated Inventory</div>
+          <div class="panel-subtitle">Monitor remaining seats, fill rates, costs, selling prices, and margins</div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-header">
+            <div class="table-section-title">Your Active Seat Blocks</div>
+            <span class="table-count-badge" id="blocksCount">0 blocks</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>PNR Code</th>
+                  <th>Flight Info</th>
+                  <th>Class</th>
+                  <th>Seats (Total/Rem)</th>
+                  <th>Fill Rate</th>
+                  <th>Cost vs Sell</th>
+                  <th>Net profit margin</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryBody">
+                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading inventory...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /inventory -->
+
+      <!-- ════════════════════════ BOOKINGS PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-bookings">
+        <div class="panel-header">
+          <div class="panel-title">📋 Booking History</div>
+          <div class="panel-subtitle">Full transaction logs of bookings issued under your pre-purchased seat blocks</div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-header">
+            <div class="table-section-title">Passenger Bookings Issued</div>
+            <span class="table-count-badge" id="bookingsCountBadge">0 bookings</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Group PNR</th>
+                  <th>Booking Ref</th>
+                  <th>Route</th>
+                  <th>Cabin Class</th>
+                  <th>Passengers</th>
+                  <th>Total Fare</th>
+                  <th>Status</th>
+                  <th>Booked Date</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsBody">
+                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">Loading booking logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /bookings -->
+
+      <!-- ════════════════════════ PROFILE PANEL ════════════════════════ -->
+      <div class="admin-panel" id="panel-profile">
+        <div class="panel-header">
+          <div class="panel-title">👤 Supplier Profile</div>
+          <div class="panel-subtitle">Your registered partner credentials and contact information</div>
+        </div>
+
+        <div class="table-section" style="max-width: 600px;">
+          <div class="table-section-header">
+            <div class="table-section-title">Registered Account Coordinates</div>
+          </div>
+          <div style="display:grid; gap:1.2rem; padding: 0.5rem 0;">
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Supplier ID</span>
+              <strong id="profId">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Partner Name</span>
+              <strong id="profName">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Email Address</span>
+              <strong id="profEmail">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Phone Number</span>
+              <strong id="profPhone">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Base Hub / Location</span>
+              <strong id="profLocation">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">PAN Card Number</span>
+              <strong id="profPAN">—</strong>
+            </div>
+            <div style="display:grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid var(--border-light); padding-bottom:0.75rem;">
+              <span style="color:var(--text-muted); font-weight:600;">Address</span>
+              <strong id="profAddress">—</strong>
+            </div>
+          </div>
+        </div>
+      </div><!-- /profile -->
+
+    </main>
+  </div><!-- /admin-layout -->
+
+  <!-- Booking Detail Modal -->
+  <div class="modal-overlay" id="bookingDetailModal">
+    <div class="modal-content wide">
+      <div class="modal-header">
+        <div class="modal-title">📋 Passenger Ticket Details</div>
+        <button class="modal-close" onclick="Utils.closeModal('bookingDetailModal')">✕</button>
+      </div>
+      <div id="bookingDetailContent">
+        <p style="text-align:center;color:var(--text-muted)">Loading ticket data...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/supplier.js"></script>
+</body>
+</html>

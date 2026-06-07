@@ -18,6 +18,23 @@
 
   <style>
     /* ── Landing-page-specific overrides ── */
+    .header-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 201;
+      pointer-events: none;
+    }
+    .header-wrapper > * {
+      pointer-events: auto;
+    }
+    .header-wrapper .navbar {
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+    }
     .hero-wrapper {
       width: 100%;
       max-width: 1280px;
@@ -440,16 +457,13 @@
 </head>
 <body>
 
-  <!-- ── Announcement Bar ── -->
-  <div class="announce-bar">
-    🎉 <strong>Special Offer:</strong> Get flat ₹500 off on your first booking! Use code <strong>SPECIALFARE500</strong> &nbsp;|&nbsp; 🔒 Secure Payments &nbsp;|&nbsp; ✈ Real-time Availability
-  </div>
-
-  <!-- ── Navbar ── -->
-  <nav class="navbar" id="navbar">
-    <div class="container">
-      <!-- Brand -->
-      <a href="index.html" class="nav-brand">
+  <!-- ── Header Wrapper ── -->
+  <div class="header-wrapper">
+    <!-- ── Navbar ── -->
+    <nav class="navbar" id="navbar">
+      <div class="container">
+        <!-- Brand -->
+        <a href="index.html" class="nav-brand">
         <div class="brand-icon">✈</div>
         Special Fare
       </a>
@@ -511,7 +525,13 @@
     </div>
   </nav>
 
-  <!-- ── Hero Section ── -->
+  <!-- ── Announcement Bar ── -->
+  <div class="announce-bar">
+    🎉 <strong>Special Offer:</strong> Get flat ₹500 off on your first booking! Use code <strong>SPECIALFARE500</strong> &nbsp;|&nbsp; 🔒 Secure Payments &nbsp;|&nbsp; ✈ Real-time Availability
+  </div>
+</div>
+
+<!-- ── Hero Section ── -->
   <section class="hero" id="hero">
     <div class="hero-plane">✈</div>
     <div class="hero-wrapper">

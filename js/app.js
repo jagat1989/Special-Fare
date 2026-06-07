@@ -839,6 +839,29 @@ const App = (() => {
         Utils.closeModal('customer-register-modal');
         Utils.showToast(`Account created! Welcome, ${name}! 🎉`, 'success');
 
+        // Send welcome email
+        Utils.sendEmail({
+          to: email,
+          subject: 'Welcome to Special Fare!',
+          body: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                <h2 style="margin: 0; font-size: 24px;">Welcome to Special Fare!</h2>
+              </div>
+              <div style="padding: 24px; color: #333; line-height: 1.6;">
+                <p>Dear ${name},</p>
+                <p>Thank you for registering with Special Fare. Your customer account has been created successfully.</p>
+                <p>You can now search and book flights at the best rates.</p>
+                <p>Best regards,<br>Special Fare Team</p>
+              </div>
+              <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+              </div>
+            </div>
+          `
+        });
+
         // Auto-login
         const loginResult = Storage.login(email, password, 'customer');
         if (loginResult.success) {

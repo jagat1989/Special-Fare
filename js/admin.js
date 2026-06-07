@@ -777,11 +777,37 @@ function initAgentsSearch() {
 }
 
 function approveAgent(agentId) {
+  const agent = Storage.getAgent(agentId);
   const result = Storage.updateAgentStatus(agentId, 'approved');
   if (result.success) {
     Utils.showToast('Agent approved successfully! 🎉', 'success');
     renderAgents();
     updatePendingBadge();
+
+    if (agent && agent.email) {
+      Utils.sendEmail({
+        to: agent.email,
+        subject: 'Agency Account Approved - Special Fare B2B',
+        body: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+              <h2 style="margin: 0; font-size: 24px;">Agency Account Approved!</h2>
+              <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Welcome to Special Fare B2B</p>
+            </div>
+            <div style="padding: 24px; color: #333; line-height: 1.6;">
+              <p>Dear ${agent.ownerName || 'Partner'},</p>
+              <p>We are pleased to inform you that your B2B travel agency account for <strong>${agent.agencyName}</strong> has been approved and activated by the administrator.</p>
+              <p>You can now log in to the B2B portal using your registered credentials. Your account is fully set up to make flight bookings, manage your wallet, configure custom agent markups, and earn commissions.</p>
+              <p>Best regards,<br>Special Fare Team</p>
+            </div>
+            <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+              © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+              For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+            </div>
+          </div>
+        `
+      });
+    }
   } else {
     Utils.showToast('Failed to approve agent', 'error');
   }
@@ -1343,6 +1369,30 @@ function initAddSupplierForm() {
         form.reset();
         Utils.closeModal('addSupplierModal');
         renderExtranet();
+
+        // Send Supplier registration email
+        Utils.sendEmail({
+          to: supplier.email,
+          subject: 'Supplier Registration Successful - Special Fare Extranet',
+          body: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                <h2 style="margin: 0; font-size: 24px;">Supplier Account Registered</h2>
+                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Special Fare Extranet</p>
+              </div>
+              <div style="padding: 24px; color: #333; line-height: 1.6;">
+                <p>Dear ${supplier.name},</p>
+                <p>An extranet supplier account has been registered for you by the administrator on Special Fare Extranet.</p>
+                <p>Your supplier account is <strong>Active</strong>. You can now log in using your registered credentials to upload and manage pre-purchased inventory blocks.</p>
+                <p>Best regards,<br>Special Fare Team</p>
+              </div>
+              <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+              </div>
+            </div>
+          `
+        });
       } else {
         Utils.showToast('Failed to register supplier.', 'error');
       }
@@ -1536,11 +1586,44 @@ function initWalletAdjustForm() {
       return;
     }
     
+    const agent = Storage.getAgent(agentId);
     const result = Storage.adjustAgentWallet(agentId, type, amount, description);
     if (result.success) {
       Utils.showToast(`Wallet adjusted successfully! New balance: ${Utils.formatCurrency(result.balance)}`, 'success');
       Utils.closeModal('walletAdjustModal');
       renderAgents();
+
+      if (agent && agent.email) {
+        Utils.sendEmail({
+          to: agent.email,
+          subject: 'Wallet Transaction Alert - Special Fare B2B',
+          body: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+              <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                <h2 style="margin: 0; font-size: 24px;">Wallet Transaction Alert</h2>
+                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Special Fare B2B Agent Wallet</p>
+              </div>
+              <div style="padding: 24px; color: #333; line-height: 1.6;">
+                <p>Dear ${agent.ownerName || 'Partner'},</p>
+                <p>Your agency wallet balance has been adjusted by the administrator.</p>
+                <table border="1" cellpadding="8" style="border-collapse: collapse; border-color: #ddd; width: 100%; font-size: 14px; margin: 15px 0;">
+                  <tr style="background: #f9fafb;"><td><strong>Transaction Type</strong></td><td>${type === 'credit' ? 'Credit (Deposit / Refund)' : 'Debit (Adjustment)'}</td></tr>
+                  <tr><td><strong>Amount</strong></td><td style="color: ${type === 'credit' ? '#10b981' : '#ef4444'}; font-weight: bold;">${Utils.formatCurrency(amount)}</td></tr>
+                  <tr style="background: #f9fafb;"><td><strong>Remarks</strong></td><td>${description}</td></tr>
+                  <tr><td><strong>New Wallet Balance</strong></td><td style="font-weight: bold; color: #2563eb;">${Utils.formatCurrency(result.balance)}</td></tr>
+                  <tr style="background: #f9fafb;"><td><strong>Date & Time</strong></td><td>${new Date().toLocaleString('en-IN')}</td></tr>
+                </table>
+                <p>Please check your B2B agent portal dashboard for the detailed transaction history.</p>
+                <p>Best regards,<br>Special Fare Team</p>
+              </div>
+              <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+              </div>
+            </div>
+          `
+        });
+      }
     } else {
       Utils.showToast(result.error || 'Failed to adjust wallet', 'error');
     }

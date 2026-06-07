@@ -417,7 +417,7 @@
 
   <script src="js/data.js?v=1.1.2"></script>
   <script src="js/storage.js?v=1.1.3"></script>
-  <script src="js/utils.js?v=1.1.2"></script>
+  <script src="js/utils.js?v=1.1.5"></script>
   <script>
     const session = Storage.getSession();
     if (session && session.role === 'supplier') {
@@ -716,6 +716,30 @@
           document.getElementById('registerForm').style.display = 'none';
           document.getElementById('registerSuccess').classList.add('show');
           Utils.showToast('Supplier registered successfully!', 'success');
+
+          // Send Supplier registration email
+          Utils.sendEmail({
+            to: email,
+            subject: 'Supplier Registration Successful - Special Fare Extranet',
+            body: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 24px;">Supplier Account Registered</h2>
+                  <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Special Fare Extranet</p>
+                </div>
+                <div style="padding: 24px; color: #333; line-height: 1.6;">
+                  <p>Dear ${name},</p>
+                  <p>Thank you for registering as a supplier with Special Fare Extranet.</p>
+                  <p>Your supplier account has been registered and is <strong>Active</strong>. You can now log in using your registered credentials to upload and manage pre-purchased inventory blocks.</p>
+                  <p>Best regards,<br>Special Fare Team</p>
+                </div>
+                <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                  © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                  For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+                </div>
+              </div>
+            `
+          });
         } else {
           btn.disabled = false;
           btnText.textContent = '🔌 Register Supplier';

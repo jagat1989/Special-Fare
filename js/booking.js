@@ -649,6 +649,86 @@ const BookingFlow = (() => {
     Utils.showToast('🎉 Booking confirmed! PNR: ' + result.booking.pnr, 'success', 6000);
     renderConfirmation(result.booking);
     goToStep(5);
+
+    // Send confirmation email
+    try {
+      const ticketUrl = `${window.location.origin}${window.location.pathname}?pnr=${result.booking.pnr}`;
+      const pnames = result.booking.passengers.map(p => {
+        let seatInfo = p.seat ? `, Seat: ${p.seat}` : '';
+        return `${p.name} (Age: ${p.age}, Gender: ${p.gender}${seatInfo})`;
+      }).join('<br>');
+
+      const emailBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+          <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+            <h2 style="margin: 0; font-size: 24px;">Flight Booking Confirmed!</h2>
+            <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Booking Confirmed — PNR: <strong>${result.booking.pnr}</strong></p>
+          </div>
+          <div style="padding: 24px; color: #333; line-height: 1.6;">
+            <p>Dear Customer,</p>
+            <p>Thank you for choosing Special Fare. Your flight booking is confirmed! Here are your flight details:</p>
+            
+            <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">✈ FLIGHT INFORMATION</h4>
+            <table cellpadding="6" cellspacing="0" style="width: 100%; font-size: 14px;">
+              <tr style="background: #f9fafb;"><td><strong>Flight Number</strong></td><td>${result.booking.airlineName} (${result.booking.flightNumber})</td></tr>
+              <tr><td><strong>Route</strong></td><td>${result.booking.origin} → ${result.booking.destination}</td></tr>
+              <tr style="background: #f9fafb;"><td><strong>Date</strong></td><td>${Utils.formatDate(result.booking.date)}</td></tr>
+              <tr><td><strong>Departure</strong></td><td>${result.booking.departureTime}</td></tr>
+              <tr style="background: #f9fafb;"><td><strong>Arrival</strong></td><td>${result.booking.arrivalTime}</td></tr>
+              <tr><td><strong>Class</strong></td><td>${Utils.formatClass(result.booking.fareClass)}</td></tr>
+            </table>
+            
+            <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">👥 PASSENGERS</h4>
+            <div style="font-size: 14px; background: #f9fafb; padding: 12px; border-radius: 6px; border-left: 4px solid #0ea5e9; line-height: 1.8;">
+              ${pnames}
+            </div>
+            
+            <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">💳 FARE SUMMARY</h4>
+            <table cellpadding="6" cellspacing="0" style="width: 100%; font-size: 14px;">
+              <tr style="background: #f9fafb;"><td>Base Fare</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.baseFare)}</td></tr>
+              <tr><td>Taxes & GST</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.taxes)}</td></tr>
+              <tr style="background: #f9fafb;"><td>Convenience Fee</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.convenienceFee)}</td></tr>
+              ${result.booking.agentMarkup ? `<tr><td>Agent Markup</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.agentMarkup)}</td></tr>` : ''}
+              <tr style="font-weight: bold; border-top: 2px solid #0ea5e9;">
+                <td style="padding-top: 10px;">Total Paid</td>
+                <td style="text-align: right; color: #2563eb; font-size: 16px; padding-top: 10px;">${Utils.formatCurrency(result.booking.totalFare)}</td>
+              </tr>
+            </table>
+            
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="${ticketUrl}" style="background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View / Print E-Ticket</a>
+            </div>
+          </div>
+          <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+            © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+            For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+          </div>
+        </div>
+      `;
+
+      // 1. Send email to B2C customer/passenger contact email
+      if (state.contact && state.contact.email) {
+        Utils.sendEmail({
+          to: state.contact.email,
+          subject: `Booking Confirmed - PNR: ${result.booking.pnr} - Special Fare`,
+          body: emailBody
+        });
+      }
+
+      // 2. Send email copy to B2B Agent if booked by an agent
+      if (result.booking.agentId) {
+        const agent = Storage.getAgent(result.booking.agentId);
+        if (agent && agent.email && (!state.contact || agent.email !== state.contact.email)) {
+          Utils.sendEmail({
+            to: agent.email,
+            subject: `B2B Booking Confirmed - PNR: ${result.booking.pnr} - Special Fare`,
+            body: emailBody.replace('Dear Customer', `Dear Partner (${agent.agencyName})`)
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to send booking confirmation email:', e);
+    }
   }
 
   // ─────────────────────────────────────────

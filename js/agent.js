@@ -527,6 +527,38 @@ function requestWithdrawal() {
     Utils.showToast(`Withdrawal of ${Utils.formatCurrency(amount)} requested successfully! Will be processed within 2-3 business days.`, 'success', 5000);
     amountInput.value = '';
     renderWallet();
+
+    const agent = Storage.getAgent(session.userId);
+    if (agent && agent.email) {
+      Utils.sendEmail({
+        to: agent.email,
+        subject: 'Withdrawal Request Received - Special Fare B2B',
+        body: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+              <h2 style="margin: 0; font-size: 24px;">Withdrawal Request Received</h2>
+              <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Special Fare B2B Agent Wallet</p>
+            </div>
+            <div style="padding: 24px; color: #333; line-height: 1.6;">
+              <p>Dear ${agent.ownerName || 'Partner'},</p>
+              <p>We have received your request to withdraw funds from your B2B wallet. Here are the request details:</p>
+              <table border="1" cellpadding="8" style="border-collapse: collapse; border-color: #ddd; width: 100%; font-size: 14px; margin: 15px 0;">
+                <tr style="background: #f9fafb;"><td><strong>Withdrawal Amount</strong></td><td style="color: #ef4444; font-weight: bold;">${Utils.formatCurrency(amount)}</td></tr>
+                <tr><td><strong>Remaining Balance</strong></td><td style="font-weight: bold; color: #2563eb;">${Utils.formatCurrency(result.newBalance)}</td></tr>
+                <tr style="background: #f9fafb;"><td><strong>Status</strong></td><td style="color: #f59e0b; font-weight: bold;">Processing (2-3 business days)</td></tr>
+                <tr><td><strong>Date of Request</strong></td><td>${new Date().toLocaleString('en-IN')}</td></tr>
+              </table>
+              <p>The funds will be transferred to your registered bank account via NEFT/UPI within the next 2-3 business days.</p>
+              <p>Best regards,<br>Special Fare Team</p>
+            </div>
+            <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+              © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+              For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+            </div>
+          </div>
+        `
+      });
+    }
   } else {
     Utils.showToast(result.error || 'Withdrawal failed. Please try again.', 'error');
   }

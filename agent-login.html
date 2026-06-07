@@ -474,7 +474,7 @@
 
   <script src="js/data.js?v=1.1.2"></script>
   <script src="js/storage.js?v=1.1.3"></script>
-  <script src="js/utils.js?v=1.1.2"></script>
+  <script src="js/utils.js?v=1.1.5"></script>
   <script>
     // If already logged in as agent, redirect to dashboard
     const session = Storage.getSession();
@@ -800,6 +800,31 @@
           document.getElementById('registerForm').style.display = 'none';
           document.getElementById('registerSuccess').classList.add('show');
           Utils.showToast('Agency registered successfully! Pending admin approval.', 'success', 5000);
+
+          // Send B2B Agent registration pending email
+          Utils.sendEmail({
+            to: email,
+            subject: 'Agency Registration Received - Special Fare B2B',
+            body: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 24px;">Agency Registration Received</h2>
+                  <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Special Fare B2B Partner Program</p>
+                </div>
+                <div style="padding: 24px; color: #333; line-height: 1.6;">
+                  <p>Dear ${ownerName},</p>
+                  <p>Thank you for registering your agency, <strong>${agencyName}</strong>, with Special Fare B2B.</p>
+                  <p>Your application is currently <strong>Pending Admin Approval</strong>. Our team will review your registration details (PAN, GST, and address verification) and notify you via email once your account has been approved and activated.</p>
+                  <p>Once approved, you will be able to log in, manage your agent wallet, configure agent-level markup settings, make bookings, and track commissions.</p>
+                  <p>Best regards,<br>Special Fare Team</p>
+                </div>
+                <div style="background: #f3f4f6; text-align: center; padding: 16px; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+                  © ${new Date().getFullYear()} Special Fare. All rights reserved.<br>
+                  For assistance, email us at <a href="mailto:info@specialfare.in" style="color: #0ea5e9; text-decoration: none;">info@specialfare.in</a>
+                </div>
+              </div>
+            `
+          });
         } else {
           btn.disabled = false;
           btnText.textContent = '🏢 Register Agency';

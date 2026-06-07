@@ -608,6 +608,60 @@ const Utils = (() => {
     }
   }
 
+  // ── Load SmtpJS script dynamically if not loaded ──
+  function _loadSmtpJS() {
+    return new Promise((resolve, reject) => {
+      if (window.Email) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://smtpjs.com/v3/smtp.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load SmtpJS library'));
+      document.head.appendChild(script);
+    });
+  }
+
+  // ── Send Email via SMTP ──
+  async function sendEmail({ to, subject, body }) {
+    try {
+      const settings = Storage.getSettings();
+      if (!settings.smtpUsername || !settings.smtpPassword) {
+        console.warn('SMTP credentials are not configured. Email not sent.');
+        return false;
+      }
+
+      await _loadSmtpJS();
+
+      if (!window.Email) {
+        console.error('SmtpJS Email library is not available.');
+        return false;
+      }
+
+      const fromEmail = settings.smtpSenderEmail || settings.smtpUsername || 'info@specialfare.in';
+      const fromName = settings.smtpSenderName || 'Special Fare';
+
+      const emailConfig = {
+        Host: settings.smtpHost || 'smtp.hostinger.com',
+        Username: settings.smtpUsername,
+        Password: settings.smtpPassword,
+        To: to,
+        From: `${fromName} <${fromEmail}>`,
+        Subject: subject,
+        Body: body
+      };
+
+      console.log(`Sending email to ${to} via SMTP...`);
+      const response = await window.Email.send(emailConfig);
+      console.log('SmtpJS Response:', response);
+      return response === 'OK';
+    } catch (error) {
+      console.error('Error sending email:', error);
+      return false;
+    }
+  }
+
   // ── Public API ──
   return {
     formatCurrency,
@@ -656,7 +710,8 @@ const Utils = (() => {
     copyToClipboard,
     requireSession,
     calculateFareSummary,
-    initWhatsAppWidget
+    initWhatsAppWidget,
+    sendEmail
   };
 
 })();

@@ -608,20 +608,57 @@ const Utils = (() => {
     }
   }
 
-  // ── Load SmtpJS script dynamically if not loaded ──
-  function _loadSmtpJS() {
-    return new Promise((resolve, reject) => {
-      if (window.Email) {
-        resolve();
-        return;
+  // ── Local SmtpJS Wrapper ──
+  const Email = {
+    send: function (a) {
+      return new Promise(function (resolve, reject) {
+        a.nocache = Math.floor(1e6 * Math.random() + 1);
+        a.Action = "Send";
+        var t = JSON.stringify(a);
+        Email.ajaxPost("https://smtpjs.com/v3/smtpjs.aspx?", t, function (e) {
+          resolve(e);
+        });
+      });
+    },
+    ajaxPost: function (e, n, t) {
+      var a = Email.createCORSRequest("POST", e);
+      if (a) {
+        a.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        a.onload = function () {
+          var e = a.responseText;
+          if (t) t(e);
+        };
+        a.send(n);
+      } else {
+        if (t) t("Error: CORS request not supported");
       }
-      const script = document.createElement('script');
-      script.src = 'https://smtpjs.com/v3/smtp.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load SmtpJS library'));
-      document.head.appendChild(script);
-    });
-  }
+    },
+    ajax: function (e, n) {
+      var t = Email.createCORSRequest("GET", e);
+      if (t) {
+        t.onload = function () {
+          var e = t.responseText;
+          if (n) n(e);
+        };
+        t.send();
+      }
+    },
+    createCORSRequest: function (e, n) {
+      var t = new XMLHttpRequest();
+      if ("withCredentials" in t) {
+        t.open(e, n, true);
+      } else if (typeof XDomainRequest != "undefined") {
+        t = new XDomainRequest();
+        t.open(e, n);
+      } else {
+        t = null;
+      }
+      return t;
+    }
+  };
+
+  // Expose it to global window scope to satisfy any external script dependencies
+  window.Email = window.Email || Email;
 
   // ── Send Email via SMTP ──
   async function sendEmail({ to, subject, body }) {
@@ -629,14 +666,6 @@ const Utils = (() => {
       const settings = Storage.getSettings();
       if (!settings.smtpUsername || !settings.smtpPassword) {
         console.warn('SMTP credentials are not configured. Email not sent.');
-        return false;
-      }
-
-      await _loadSmtpJS();
-
-      if (!window.Email) {
-        console.error('SmtpJS Email library is not available.');
-        Utils.showToast('SmtpJS Email library is not available.', 'error', 8000);
         return false;
       }
 
@@ -662,7 +691,7 @@ const Utils = (() => {
       };
 
       console.log(`Sending email to ${to} via SMTP...`);
-      const response = await window.Email.send(emailConfig);
+      const response = await Email.send(emailConfig);
       console.log('SmtpJS Response:', response);
 
       if (response !== 'OK') {

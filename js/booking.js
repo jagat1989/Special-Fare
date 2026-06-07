@@ -793,23 +793,15 @@ const BookingFlow = (() => {
           <thead>
             <tr>
               <th>Passenger Name</th>
-              <th>Ticket Number</th>
-              <th>Frequent Flyer No.</th>
               <th>Baggage Allowance</th>
             </tr>
           </thead>
           <tbody>
             ${booking.passengers.map((p, i) => {
-              let ticketSeed = booking.pnr + i;
-              let ticketNum = "016 " + Math.floor(2000000000 + hashCode(ticketSeed) % 8000000000);
-              let ffSeed = p.name + i;
-              let ffNum = `${booking.airlineCode || 'AI'}-${Math.floor(1000000 + hashCode(ffSeed) % 9000000)}`;
               let allowance = (booking.fareClass === 'business') ? '2 x 32kg (Checked) + 7kg Cabin' : '1 x 25kg (Checked) + 7kg Cabin';
               return `
                 <tr>
                   <td><strong>${p.name.toUpperCase()}</strong> (${p.gender || ''}, Age ${p.age || '—'})</td>
-                  <td style="font-family: monospace; font-size: 0.8rem;">${ticketNum}</td>
-                  <td>${ffNum}</td>
                   <td>${allowance}</td>
                 </tr>
               `;

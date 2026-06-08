@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Design System -->
-  <link rel="stylesheet" href="css/index.css?v=1.2.2" />
+  <link rel="stylesheet" href="css/index.css?v=1.2.3" />
 
   <style>
     /* ── Landing-page-specific overrides ── */
@@ -472,7 +472,6 @@
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="search.html" id="search-nav-link">Search Flights</a></li>
-        <li><a href="#popular-routes">Deals</a></li>
         <li id="session-nav-link">
           <a href="#" id="session-page-link" class="font-semibold" style="color:var(--accent-secondary)">
             Dashboard
@@ -671,26 +670,7 @@
     </div>
   </div>
 
-  <!-- ── Popular Routes Section ── -->
-  <section class="section" id="popular-routes">
-    <div class="container">
-      <div class="section-header animate-fadeInUp">
-        <div class="section-eyebrow">✈ Top Destinations</div>
-        <h2 class="section-title">Popular <span class="text-gradient">Flight Routes</span></h2>
-        <p class="section-subtitle">
-          Discover the most-booked routes across India. Prices shown are the lowest available fares for economy class.
-        </p>
-      </div>
-      <div class="routes-grid" id="routes-grid">
-        <!-- Dynamically rendered by app.js -->
-      </div>
-      <div style="text-align:center;margin-top:var(--space-2xl);">
-        <a href="search.html" class="btn btn-secondary btn-lg">
-          View All Routes →
-        </a>
-      </div>
-    </div>
-  </section>
+
 
   <!-- ── Airlines Section ── -->
   <section class="section" style="padding-top:0;">
@@ -793,7 +773,6 @@
             <li><a href="search.html?from=BOM&to=GOI">Mumbai to Goa</a></li>
             <li><a href="search.html?from=BLR&to=DEL">Bengaluru to Delhi</a></li>
             <li><a href="search.html?from=DEL&to=SXR">Delhi to Srinagar</a></li>
-            <li><a href="#popular-routes">Popular Routes</a></li>
           </ul>
         </div>
 
@@ -960,10 +939,10 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- ── Scripts ── -->
-  <script src="js/data.js?v=1.2.2"></script>
-  <script src="js/storage.js?v=1.2.2"></script>
-  <script src="js/utils.js?v=1.2.2"></script>
-  <script src="js/app.js?v=1.2.2"></script>
+  <script src="js/data.js?v=1.2.3"></script>
+  <script src="js/storage.js?v=1.2.3"></script>
+  <script src="js/utils.js?v=1.2.3"></script>
+  <script src="js/app.js?v=1.2.3"></script>
   <script>Utils.initWhatsAppWidget();</script>
 
 </body>

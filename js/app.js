@@ -27,7 +27,6 @@ const App = (() => {
     initSearchForm();
     applyLandingPageCustomizations();
     renderFeatures();
-    renderPopularRoutes();
     renderAirlines();
     initCounterAnimations();
     initSessionNav();
@@ -411,91 +410,7 @@ const App = (() => {
     document.getElementById('search-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  // ── Popular Routes ────────────────────────────────────────────────────────
-  function renderPopularRoutes() {
-    const grid = document.getElementById('routes-grid');
-    if (!grid) return;
 
-    const routes = FlightData.getPopularRoutes();
-    const tagColorMap = {
-      'Most Popular':   'badge-warning',
-      'Business Route': 'badge-info',
-      'Vacation':       'badge-success',
-      'Tech Corridor':  'badge-primary',
-      'Trending':       'badge-danger',
-      'Scenic':         'badge-success',
-      'Long Haul':      'badge-info',
-      'Weekend Getaway':'badge-warning'
-    };
-
-    const routeIcons = {
-      'DEL-BOM': '🏙️',
-      'BLR-DEL': '💼',
-      'DEL-GOI': '🏖️',
-      'BOM-BLR': '💻',
-      'HYD-DEL': '📈',
-      'DEL-SXR': '🏔️',
-      'CCU-BLR': '✈️',
-      'BOM-GOI': '🌴'
-    };
-
-    grid.innerHTML = routes.map((route, i) => {
-      const fromCode = route.from.code;
-      const toCode   = route.to.code;
-      const routeKey = `${fromCode}-${toCode}`;
-      const icon     = routeIcons[routeKey] || '✈️';
-      const badgeCls = tagColorMap[route.tag] || 'badge-primary';
-      const duration = Utils.formatDuration(route.duration);
-      const price    = Utils.formatCurrency(route.basePrice);
-
-      // Get default date (7 days from now)
-      const dt = new Date();
-      dt.setDate(dt.getDate() + 7);
-      const dateStr = dt.toISOString().split('T')[0];
-
-      return `
-        <div class="route-card animate-fadeInUp animate-delay-${(i % 5) + 1}"
-             onclick="navigateToRoute('${fromCode}', '${toCode}', '${dateStr}')"
-             role="button" tabindex="0"
-             onkeydown="if(event.key==='Enter') navigateToRoute('${fromCode}','${toCode}','${dateStr}')">
-          <div class="route-card-content">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-md);">
-              <span style="font-size:2rem;">${icon}</span>
-              <span class="badge ${badgeCls}">${route.tag}</span>
-            </div>
-            <div class="route-cities">
-              <div class="route-city-name">${route.from.city}</div>
-              <span class="route-arrow">→</span>
-              <div class="route-city-name">${route.to.city}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);">
-              <div style="font-size:0.8rem;color:var(--text-muted);">
-                <span style="margin-right:var(--space-sm);">🛫 ${fromCode}</span>
-                <span>🛬 ${toCode}</span>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-md);padding-top:var(--space-md);border-top:1px solid var(--border-light);">
-              <div>
-                <div class="route-price">
-                  <span class="from-label">From </span>${price}
-                </div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">Economy · One Way</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);">⏱ ${duration}</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">Non-stop</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  window.navigateToRoute = function(from, to, date) {
-    const params = new URLSearchParams({ from, to, date, passengers: 1, class: 'economy' });
-    window.location.href = `search.html?${params.toString()}`;
-  };
 
   // ── Airlines Strip ────────────────────────────────────────────────────────
   function renderAirlines() {

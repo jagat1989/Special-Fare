@@ -622,7 +622,7 @@ function renderCustomers() {
   if (countEl) countEl.textContent = filtered.length;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No customers found</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No customers found</td></tr>`;
     return;
   }
 
@@ -653,9 +653,21 @@ function renderCustomers() {
               style="background:rgba(14, 165, 233,0.15);color:#a5b4fc;border:1px solid rgba(14, 165, 233,0.3);padding:4px 10px;font-size:0.78rem">
               🔑 Login As
             </button>
+            <button class="btn btn-sm" onclick="openEditCustomerModal('${customer.id}')"
+              style="background:rgba(234,179,8,0.15);color:#fef08a;border:1px solid rgba(234,179,8,0.3);padding:4px 10px;font-size:0.78rem">
+              ✏️ Edit
+            </button>
             <button class="btn btn-sm" onclick="openResetPasswordModal('${customer.id}', 'customer')"
               style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);padding:4px 10px;font-size:0.78rem">
               🔑 Reset Pass
+            </button>
+            <button class="btn btn-sm" onclick="openCustomerBookingsModal('${customer.id}', '${customer.name.replace(/'/g, "\\'")}', '${customer.email}')"
+              style="background:rgba(6,182,212,0.15);color:#a5f3fc;border:1px solid rgba(6,182,212,0.3);padding:4px 10px;font-size:0.78rem">
+              📋 Bookings
+            </button>
+            <button class="btn btn-sm" onclick="deleteCustomer('${customer.id}', '${customer.name.replace(/'/g, "\\'")}')"
+              style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);padding:4px 10px;font-size:0.78rem">
+              🗑️ Delete
             </button>
           </div>
         </td>
@@ -1750,6 +1762,128 @@ function initResetPasswordForm() {
   }
 }
 
+// ── Edit Customer Profile ──
+function openEditCustomerModal(id) {
+  const customer = Storage.getCustomer(id);
+  if (!customer) {
+    Utils.showToast('Customer not found.', 'error');
+    return;
+  }
+  document.getElementById('editCustomerTargetId').value = id;
+  document.getElementById('editCustomerName').value = customer.name || '';
+  document.getElementById('editCustomerEmail').value = customer.email || '';
+  document.getElementById('editCustomerPhone').value = customer.phone || '';
+
+  // Clear error states
+  Utils.clearFieldError('editCustomerName');
+  Utils.clearFieldError('editCustomerEmail');
+  Utils.clearFieldError('editCustomerPhone');
+
+  Utils.openModal('adminEditCustomerModal');
+}
+
+function initEditCustomerForm() {
+  const form = document.getElementById('adminEditCustomerForm');
+  if (form && !form.dataset.initialized) {
+    form.dataset.initialized = 'true';
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const id = document.getElementById('editCustomerTargetId').value;
+      const name = document.getElementById('editCustomerName').value.trim();
+      const email = document.getElementById('editCustomerEmail').value.trim();
+      const phone = document.getElementById('editCustomerPhone').value.trim();
+
+      let valid = true;
+      if (!name) {
+        Utils.showFieldError('editCustomerName', 'Full Name is required.');
+        valid = false;
+      } else {
+        Utils.clearFieldError('editCustomerName');
+      }
+
+      if (!email || !Utils.validateEmail(email)) {
+        Utils.showFieldError('editCustomerEmail', 'Please enter a valid email address.');
+        valid = false;
+      } else {
+        Utils.clearFieldError('editCustomerEmail');
+      }
+
+      if (!phone || !Utils.validatePhone(phone)) {
+        Utils.showFieldError('editCustomerPhone', 'Please enter a valid 10-digit phone number.');
+        valid = false;
+      } else {
+        Utils.clearFieldError('editCustomerPhone');
+      }
+
+      if (!valid) return;
+
+      const result = Storage.updateCustomerProfile(id, { name, email, phone });
+      if (result.success) {
+        Utils.closeModal('adminEditCustomerModal');
+        Utils.showToast('Customer profile updated successfully!', 'success');
+        renderCustomers();
+      } else {
+        Utils.showToast(result.error || 'Failed to update customer profile', 'error');
+      }
+    });
+  }
+}
+
+// ── Delete Customer ──
+function deleteCustomer(id, name) {
+  if (confirm(`Are you sure you want to delete customer "${name}"? This action is permanent and will log them out immediately.`)) {
+    const result = Storage.removeCustomer(id);
+    if (result.success) {
+      Utils.showToast('Customer deleted successfully.', 'success');
+      renderCustomers();
+      updatePendingBadge(); // Update counters
+    } else {
+      Utils.showToast(result.error || 'Failed to delete customer.', 'error');
+    }
+  }
+}
+
+// ── Customer Bookings History ──
+function openCustomerBookingsModal(id, name, email) {
+  document.getElementById('custBookingsName').textContent = name;
+  document.getElementById('custBookingsEmail').textContent = email;
+  
+  const bookings = Storage.getBookingsByUser(id) || [];
+  const tbody = document.getElementById('custBookingsBody');
+  if (!tbody) return;
+
+  if (bookings.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">No bookings found for this customer</td></tr>`;
+  } else {
+    tbody.innerHTML = bookings.map(b => {
+      const originAirport = FlightData.getAirport(b.origin);
+      const destAirport = FlightData.getAirport(b.destination);
+      const fromCity = originAirport ? originAirport.city : b.origin;
+      const toCity = destAirport ? destAirport.city : b.destination;
+      const travelDateStr = new Date(b.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      
+      return `
+        <tr>
+          <td><strong style="color:var(--accent-primary);cursor:pointer;" onclick="Utils.closeModal('adminCustomerBookingsModal');setTimeout(() => viewBookingDetail('${b.id}'), 300);">${b.pnr}</strong></td>
+          <td style="font-size:0.83rem"><strong>${fromCity} → ${toCity}</strong></td>
+          <td style="font-size:0.83rem">${b.flightNumber}</td>
+          <td style="font-size:0.83rem">${travelDateStr}</td>
+          <td style="text-transform: capitalize; font-size:0.83rem">${b.fareClass}</td>
+          <td style="font-size:0.83rem; font-weight:600; color:var(--accent-secondary);">${Utils.formatCurrency(b.totalFare)}</td>
+          <td>${Utils.getStatusBadge(b.status)}</td>
+          <td>
+            <button class="btn btn-sm" onclick="Utils.closeModal('adminCustomerBookingsModal');setTimeout(() => viewBookingDetail('${b.id}'), 300);" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); padding:2px 8px; font-size:0.75rem; color: var(--accent-secondary);">
+              🔍 View
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  Utils.openModal('adminCustomerBookingsModal');
+}
+
 // Bind to window
 window.deletePrepurchasedBlock = deletePrepurchasedBlock;
 window.openEditSupplierModal = openEditSupplierModal;
@@ -1758,6 +1892,9 @@ window.deleteSupplier = deleteSupplier;
 window.impersonate = impersonate;
 window.openWalletModal = openWalletModal;
 window.openResetPasswordModal = openResetPasswordModal;
+window.openEditCustomerModal = openEditCustomerModal;
+window.deleteCustomer = deleteCustomer;
+window.openCustomerBookingsModal = openCustomerBookingsModal;
 
 // ── Reset Data ──
 function initResetDataBtn() {
@@ -1829,6 +1966,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Init password reset form
   initResetPasswordForm();
+
+  // Init customer profile form
+  initEditCustomerForm();
 
   // Real-time synchronization across tabs/windows
   window.addEventListener('storage', function (e) {

@@ -1750,6 +1750,74 @@
     </div>
   </div>
 
+  <!-- Edit Customer Profile Modal -->
+  <div class="modal-overlay" id="adminEditCustomerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">✏️ Edit Customer Profile</div>
+        <button class="modal-close" onclick="Utils.closeModal('adminEditCustomerModal')">✕</button>
+      </div>
+      <form id="adminEditCustomerForm" novalidate>
+        <input type="hidden" id="editCustomerTargetId" />
+        <div class="form-group">
+          <label class="form-label" for="editCustomerName">Full Name *</label>
+          <input type="text" id="editCustomerName" class="form-control" placeholder="e.g. Rajesh Kumar" required />
+          <div class="form-error" id="editCustomerNameError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editCustomerEmail">Email Address *</label>
+          <input type="email" id="editCustomerEmail" class="form-control" placeholder="e.g. rajesh@example.com" required />
+          <div class="form-error" id="editCustomerEmailError"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editCustomerPhone">Phone Number *</label>
+          <input type="text" id="editCustomerPhone" class="form-control" placeholder="e.g. 9876543210" required />
+          <div class="form-error" id="editCustomerPhoneError"></div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="Utils.closeModal('adminEditCustomerModal')" style="flex:1">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="flex:1">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Customer Booking History Modal -->
+  <div class="modal-overlay" id="adminCustomerBookingsModal">
+    <div class="modal-content" style="max-width: 850px; width: 95%;">
+      <div class="modal-header">
+        <div class="modal-title">📋 Customer Booking History</div>
+        <button class="modal-close" onclick="Utils.closeModal('adminCustomerBookingsModal')">✕</button>
+      </div>
+      <div style="margin-bottom: 1.25rem; font-size: 0.95rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div>Customer Name: <strong id="custBookingsName">—</strong></div>
+        <div>Email Address: <span id="custBookingsEmail" style="color: var(--accent-secondary); font-weight: 600;">—</span></div>
+      </div>
+      <div class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
+        <table class="table" style="width:100%">
+          <thead>
+            <tr>
+              <th>PNR</th>
+              <th>Sector</th>
+              <th>Flight</th>
+              <th>Date</th>
+              <th>Class</th>
+              <th>Fares</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="custBookingsBody">
+            <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem">No bookings found</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="Utils.closeModal('adminCustomerBookingsModal')" style="min-width: 120px;">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/data.js?v=1.2.8"></script>
   <script src="js/storage.js?v=1.2.8"></script>

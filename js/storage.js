@@ -350,6 +350,19 @@ const Storage = (() => {
     return _get(KEYS.USERS) || [];
   }
 
+  function removeCustomer(userId) {
+    let users = _get(KEYS.USERS) || [];
+    users = users.filter(u => u.id !== userId);
+    _set(KEYS.USERS, users);
+
+    // Clean up session if active
+    const session = _get(KEYS.SESSION + '_customer');
+    if (session && session.userId === userId) {
+      _remove(KEYS.SESSION + '_customer');
+    }
+    return { success: true };
+  }
+
   function getAllAgents() {
     return _get(KEYS.AGENTS) || [];
   }
@@ -1179,6 +1192,7 @@ const Storage = (() => {
     registerCustomer,
     registerAgent,
     getAllCustomers,
+    removeCustomer,
     getAllAgents,
     getAgent,
     getCustomer,

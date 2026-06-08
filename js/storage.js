@@ -246,13 +246,14 @@ const Storage = (() => {
 
   function registerCustomer(data) {
     const users = _get(KEYS.USERS) || [];
-    if (users.find(u => u.email === data.email)) {
+    const cleanEmail = (data.email || '').trim().toLowerCase();
+    if (users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail)) {
       return { success: false, error: 'Email already registered.' };
     }
     const user = {
       id: 'user_' + Date.now(),
       name: data.name,
-      email: data.email,
+      email: cleanEmail,
       password: data.password,
       phone: data.phone || '',
       role: 'customer',
@@ -265,14 +266,15 @@ const Storage = (() => {
 
   function registerAgent(data) {
     const agents = _get(KEYS.AGENTS) || [];
-    if (agents.find(a => a.email === data.email)) {
+    const cleanEmail = (data.email || '').trim().toLowerCase();
+    if (agents.find(a => (a.email || '').trim().toLowerCase() === cleanEmail)) {
       return { success: false, error: 'Email already registered.' };
     }
     const agent = {
       id: 'agent_' + Date.now(),
       agencyName: data.agencyName,
       ownerName: data.ownerName,
-      email: data.email,
+      email: cleanEmail,
       password: data.password,
       phone: data.phone,
       gstNumber: data.gstNumber || '',
@@ -349,16 +351,17 @@ const Storage = (() => {
       return { success: false, error: 'User not found.' };
     }
     
+    const cleanEmail = (data.email || '').trim().toLowerCase();
     // Check if email is being changed and is already taken
-    if (data.email !== users[index].email) {
-      const emailTaken = users.some((u, i) => i !== index && u.email === data.email);
+    if (cleanEmail !== (users[index].email || '').trim().toLowerCase()) {
+      const emailTaken = users.some((u, i) => i !== index && (u.email || '').trim().toLowerCase() === cleanEmail);
       if (emailTaken) {
         return { success: false, error: 'Email already registered.' };
       }
     }
     
     users[index].name = data.name;
-    users[index].email = data.email;
+    users[index].email = cleanEmail;
     users[index].phone = data.phone;
     if (data.password) {
       users[index].password = data.password;
@@ -693,7 +696,12 @@ const Storage = (() => {
 
   function addSupplier(sup) {
     const suppliers = getSuppliers();
+    const cleanEmail = (sup.email || '').trim().toLowerCase();
+    if (suppliers.find(s => (s.email || '').trim().toLowerCase() === cleanEmail)) {
+      return { success: false, error: 'Email already registered.' };
+    }
     sup.id = 'sup_' + Date.now();
+    sup.email = cleanEmail;
     sup.createdAt = new Date().toISOString();
     suppliers.push(sup);
     _set(KEYS.SUPPLIERS, suppliers);
@@ -702,10 +710,12 @@ const Storage = (() => {
 
   function registerSupplier(sup) {
     const suppliers = getSuppliers();
-    if (suppliers.find(s => s.email === sup.email)) {
+    const cleanEmail = (sup.email || '').trim().toLowerCase();
+    if (suppliers.find(s => (s.email || '').trim().toLowerCase() === cleanEmail)) {
       return { success: false, error: 'Email already registered.' };
     }
     sup.id = 'sup_' + Date.now();
+    sup.email = cleanEmail;
     sup.status = 'active';
     sup.createdAt = new Date().toISOString();
     suppliers.push(sup);
@@ -741,10 +751,14 @@ const Storage = (() => {
     const suppliers = getSuppliers();
     const supplier = suppliers.find(s => s.id === id);
     if (supplier) {
-      if (details.email && details.email !== supplier.email) {
-        if (suppliers.some(s => s.email === details.email)) {
-          return { success: false, error: 'Email already in use.' };
+      if (details.email) {
+        const cleanEmail = (details.email || '').trim().toLowerCase();
+        if (cleanEmail !== (supplier.email || '').trim().toLowerCase()) {
+          if (suppliers.some(s => (s.email || '').trim().toLowerCase() === cleanEmail)) {
+            return { success: false, error: 'Email already in use.' };
+          }
         }
+        details.email = cleanEmail;
       }
       Object.assign(supplier, details);
       _set(KEYS.SUPPLIERS, suppliers);

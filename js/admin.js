@@ -634,7 +634,7 @@ function renderCustomers() {
         <td>
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#38bdf8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0">
-              ${customer.name.charAt(0).toUpperCase()}
+              ${(customer.name || 'C').charAt(0).toUpperCase()}
             </div>
             <div>
               <div style="font-weight:600">${customer.name}</div>
@@ -1829,6 +1829,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Init password reset form
   initResetPasswordForm();
+
+  // Real-time synchronization across tabs/windows
+  window.addEventListener('storage', function (e) {
+    if (['skywings_users', 'skywings_agents', 'skywings_suppliers', 'skywings_bookings'].includes(e.key)) {
+      switchPanel(currentPanel);
+      updatePendingBadge();
+    }
+  });
 
   // Load default panel
   switchPanel('analytics');

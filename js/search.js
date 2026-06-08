@@ -66,6 +66,13 @@
     setTimeout(() => {
       loadFlights();
     }, 400);
+
+    // Real-time synchronization across tabs/windows
+    window.addEventListener('storage', function (e) {
+      if (['skywings_session_customer', 'skywings_session_agent', 'skywings_session_supplier', 'skywings_session_admin'].includes(e.key)) {
+        window.location.reload();
+      }
+    });
   }
 
   // ── Render navbar session ──────────────────────────────────

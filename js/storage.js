@@ -201,7 +201,7 @@ const Storage = (() => {
       users = _get(KEYS.ADMINS) || [];
       const admin = users.find(u => (u.username || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (admin) {
-        _set(KEYS.SESSION, { userId: admin.id, role: 'admin', name: admin.name, email: admin.username });
+        _set(KEYS.SESSION + '_admin', { userId: admin.id, role: 'admin', name: admin.name, email: admin.username });
         return { success: true, user: admin };
       }
     } else if (role === 'agent') {
@@ -211,7 +211,7 @@ const Storage = (() => {
         if (agent.status !== 'approved') {
           return { success: false, error: `Your account is ${agent.status}. Please wait for admin approval.` };
         }
-        _set(KEYS.SESSION, { userId: agent.id, role: 'agent', name: agent.ownerName, email: agent.email, agencyName: agent.agencyName });
+        _set(KEYS.SESSION + '_agent', { userId: agent.id, role: 'agent', name: agent.ownerName, email: agent.email, agencyName: agent.agencyName });
         return { success: true, user: agent };
       }
     } else if (role === 'supplier') {
@@ -221,30 +221,56 @@ const Storage = (() => {
         if (supplier.status && supplier.status !== 'active') {
           return { success: false, error: `Your account is ${supplier.status}. Contact administrator support.` };
         }
-        _set(KEYS.SESSION, { userId: supplier.id, role: 'supplier', name: supplier.name, email: supplier.email });
+        _set(KEYS.SESSION + '_supplier', { userId: supplier.id, role: 'supplier', name: supplier.name, email: supplier.email });
         return { success: true, user: supplier };
       }
     } else {
       users = _get(KEYS.USERS) || [];
       const user = users.find(u => (u.email || '').trim().toLowerCase() === cleanEmail && u.password === password);
       if (user) {
-        _set(KEYS.SESSION, { userId: user.id, role: 'customer', name: user.name, email: user.email });
+        _set(KEYS.SESSION + '_customer', { userId: user.id, role: 'customer', name: user.name, email: user.email });
         return { success: true, user };
       }
     }
     return { success: false, error: 'Invalid email or password.' };
   }
 
-  function logout() {
-    _remove(KEYS.SESSION);
+  function logout(role) {
+    if (role) {
+      _remove(KEYS.SESSION + '_' + role);
+    } else {
+      const activeRole = getCurrentUserRole();
+      if (activeRole) {
+        _remove(KEYS.SESSION + '_' + activeRole);
+      } else {
+        _remove(KEYS.SESSION + '_customer');
+        _remove(KEYS.SESSION + '_agent');
+        _remove(KEYS.SESSION + '_supplier');
+        _remove(KEYS.SESSION + '_admin');
+      }
+    }
   }
 
-  function getSession() {
-    return _get(KEYS.SESSION);
+  function getSession(role) {
+    if (role) {
+      return _get(KEYS.SESSION + '_' + role);
+    }
+    return _get(KEYS.SESSION + '_customer') || 
+           _get(KEYS.SESSION + '_agent') || 
+           _get(KEYS.SESSION + '_supplier') || 
+           _get(KEYS.SESSION + '_admin');
   }
 
-  function isLoggedIn() {
-    return !!_get(KEYS.SESSION);
+  function isLoggedIn(role) {
+    if (role) {
+      return !!_get(KEYS.SESSION + '_' + role);
+    }
+    return !!(
+      _get(KEYS.SESSION + '_customer') || 
+      _get(KEYS.SESSION + '_agent') || 
+      _get(KEYS.SESSION + '_supplier') || 
+      _get(KEYS.SESSION + '_admin')
+    );
   }
 
   function getCurrentUserRole() {
@@ -382,11 +408,11 @@ const Storage = (() => {
     _set(KEYS.USERS, users);
     
     // Update session too
-    const session = _get(KEYS.SESSION);
+    const session = _get(KEYS.SESSION + '_customer');
     if (session && session.userId === userId) {
       session.name = data.name;
       session.email = data.email;
-      _set(KEYS.SESSION, session);
+      _set(KEYS.SESSION + '_customer', session);
     }
     
     return { success: true, user: users[index] };
@@ -634,21 +660,21 @@ const Storage = (() => {
       const users = _get(KEYS.USERS) || [];
       const user = users.find(u => u.id === userId);
       if (user) {
-        _set(KEYS.SESSION, { userId: user.id, role: 'customer', name: user.name, email: user.email });
+        _set(KEYS.SESSION + '_customer', { userId: user.id, role: 'customer', name: user.name, email: user.email });
         return { success: true, redirect: 'index.html' };
       }
     } else if (role === 'agent') {
       const agents = _get(KEYS.AGENTS) || [];
       const agent = agents.find(u => u.id === userId);
       if (agent) {
-        _set(KEYS.SESSION, { userId: agent.id, role: 'agent', name: agent.ownerName, email: agent.email, agencyName: agent.agencyName });
+        _set(KEYS.SESSION + '_agent', { userId: agent.id, role: 'agent', name: agent.ownerName, email: agent.email, agencyName: agent.agencyName });
         return { success: true, redirect: 'agent-dashboard.html' };
       }
     } else if (role === 'supplier') {
       const suppliers = _get(KEYS.SUPPLIERS) || [];
       const supplier = suppliers.find(u => u.id === userId);
       if (supplier) {
-        _set(KEYS.SESSION, { userId: supplier.id, role: 'supplier', name: supplier.name, email: supplier.email });
+        _set(KEYS.SESSION + '_supplier', { userId: supplier.id, role: 'supplier', name: supplier.name, email: supplier.email });
         return { success: true, redirect: 'supplier-dashboard.html' };
       }
     }

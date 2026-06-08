@@ -1789,13 +1789,13 @@ function initResetDataBtn() {
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function () {
   // Set admin name in navbar
-  const session = Storage.getSession();
+  const session = Storage.getSession('admin');
   const adminNameEl = document.getElementById('adminName');
   if (adminNameEl && session) adminNameEl.textContent = session.name;
 
   // Logout
   document.getElementById('logoutBtn')?.addEventListener('click', function () {
-    Storage.logout();
+    Storage.logout('admin');
     Utils.showToast('Logged out successfully', 'success');
     setTimeout(() => window.location.href = 'admin-login.html', 600);
   });
@@ -1832,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Real-time synchronization across tabs/windows
   window.addEventListener('storage', function (e) {
-    if (['skywings_users', 'skywings_agents', 'skywings_suppliers', 'skywings_bookings'].includes(e.key)) {
+    if (['skywings_users', 'skywings_agents', 'skywings_suppliers', 'skywings_bookings', 'skywings_settings', 'skywings_announcements', 'skywings_custom_flights'].includes(e.key)) {
       switchPanel(currentPanel);
       updatePendingBadge();
     }

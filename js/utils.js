@@ -548,10 +548,11 @@ const Utils = (() => {
 
   // ── Session guard ──
   function requireSession(role) {
-    const session = Storage.getSession();
+    const session = Storage.getSession(role);
     if (!session) {
       if (role === 'admin') window.location.href = 'admin-login.html';
       else if (role === 'agent') window.location.href = 'agent-login.html';
+      else if (role === 'supplier') window.location.href = 'supplier-login.html';
       else window.location.href = 'index.html';
       return false;
     }
@@ -560,6 +561,7 @@ const Utils = (() => {
       setTimeout(() => {
         if (role === 'admin') window.location.href = 'admin-login.html';
         else if (role === 'agent') window.location.href = 'agent-login.html';
+        else if (role === 'supplier') window.location.href = 'supplier-login.html';
         else window.location.href = 'index.html';
       }, 1500);
       return false;

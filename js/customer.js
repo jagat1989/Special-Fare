@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Guard role
   if (!Utils.requireSession('customer')) return;
 
-  const session = Storage.getSession();
+  const session = Storage.getSession('customer');
   let customerBookings = [];
   let cancelTargetId = null;
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.handleLogout = function () {
-    Storage.logout();
+    Storage.logout('customer');
     Utils.showToast('Logged out successfully', 'success');
     setTimeout(() => {
       window.location.href = 'index.html';
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
       Utils.showToast('Profile updated successfully!', 'success');
       
       // Update displays
-      const sessionUpdated = Storage.getSession();
+      const sessionUpdated = Storage.getSession('customer');
       if (displayNameEl) {
         displayNameEl.textContent = sessionUpdated.name || 'User';
       }
@@ -335,4 +335,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (status === 'cancelled') return '<span class="badge badge-danger">Cancelled</span>';
     return `<span class="badge badge-warning">${status}</span>`;
   }
+  // Real-time synchronization across tabs/windows
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'skywings_session_customer' && !e.newValue) {
+      window.location.href = 'index.html';
+      return;
+    }
+    if (['skywings_bookings', 'skywings_users'].includes(e.key)) {
+      loadDashboardData();
+      const profileTab = document.getElementById('panel-profile');
+      if (profileTab && profileTab.classList.contains('active')) {
+        initProfileForm();
+      }
+    }
+  });
 });

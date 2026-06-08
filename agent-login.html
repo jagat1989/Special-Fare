@@ -477,7 +477,7 @@
   <script src="js/utils.js?v=1.2.8"></script>
   <script>
     // If already logged in as agent, redirect to dashboard
-    const session = Storage.getSession();
+    const session = Storage.getSession('agent');
     if (session && session.role === 'agent') {
       window.location.href = 'agent-dashboard.html';
     }

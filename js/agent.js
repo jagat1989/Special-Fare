@@ -10,7 +10,7 @@ if (!Utils.requireSession('agent')) {
 }
 
 // ── Global State ──
-const session = Storage.getSession();
+const session = Storage.getSession('agent');
 let agentData = Storage.getAgent(session.userId);
 let agentBookings = [];
 let allFlightResults = [];
@@ -54,7 +54,7 @@ function switchPanel(panelId) {
 
 // ── Logout ──
 function handleLogout() {
-  Storage.logout();
+  Storage.logout('agent');
   Utils.showToast('Logged out successfully. See you soon! 👋', 'success');
   setTimeout(() => { window.location.href = 'agent-login.html'; }, 800);
 }
@@ -829,6 +829,23 @@ function renderProfile() {
     setupAutocomplete('bookFrom', 'bookFromDD', 'bookFromCode');
     setupAutocomplete('bookTo', 'bookToDD', 'bookToCode');
   }, 100);
+
+  // Real-time synchronization across tabs/windows
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'skywings_session_agent' && !e.newValue) {
+      window.location.href = 'agent-login.html';
+      return;
+    }
+    if (['skywings_bookings', 'skywings_agents', 'skywings_agent_wallets', 'skywings_agent_transactions', 'skywings_markup_rules'].includes(e.key)) {
+      agentData = Storage.getAgent(session.userId);
+      renderOverview();
+      const activePanel = document.querySelector('.panel.active');
+      if (activePanel) {
+        const panelId = activePanel.id.replace('panel-', '');
+        switchPanel(panelId);
+      }
+    }
+  });
 })();
 
 

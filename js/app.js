@@ -45,6 +45,13 @@ const App = (() => {
     // Observe animated elements
     Utils.observeElements('.feature-card', 'animate-fadeInUp');
     Utils.observeElements('.route-card',   'animate-fadeInUp');
+
+    // Real-time synchronization across tabs/windows
+    window.addEventListener('storage', function (e) {
+      if (['skywings_session_customer', 'skywings_session_agent', 'skywings_session_supplier', 'skywings_session_admin', 'skywings_settings'].includes(e.key)) {
+        window.location.reload();
+      }
+    });
   }
 
   // ── Login Dropdown ───────────────────────────────────────────────────────

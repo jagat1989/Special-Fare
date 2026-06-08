@@ -156,7 +156,7 @@
   <script>
     // If already logged in as admin, redirect
     (function () {
-      const session = Storage.getSession();
+      const session = Storage.getSession('admin');
       if (session && session.role === 'admin') {
         window.location.href = 'admin-dashboard.html';
       }

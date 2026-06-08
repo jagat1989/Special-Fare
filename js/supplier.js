@@ -10,7 +10,7 @@ if (!Utils.requireSession('supplier')) {
 
 // ── State ──
 let currentPanel = 'overview';
-const sessionSupplier = Storage.getSession();
+const sessionSupplier = Storage.getSession('supplier');
 
 // ── Sidebar Navigation ──
 function initSidebar() {
@@ -424,19 +424,30 @@ window.viewBookingDetail = viewBookingDetail;
 // ── Bootstrap ──
 document.addEventListener('DOMContentLoaded', function () {
   // Set supplier name in navbar
-  const session = Storage.getSession();
+  const session = Storage.getSession('supplier');
   const nameEl = document.getElementById('supplierName');
   if (nameEl && session) nameEl.textContent = session.name;
 
   // Logout
   document.getElementById('logoutBtn')?.addEventListener('click', function () {
-    Storage.logout();
+    Storage.logout('supplier');
     Utils.showToast('Logged out successfully', 'success');
     setTimeout(() => window.location.href = 'supplier-login.html', 600);
   });
 
   // Init sidebar
   initSidebar();
+
+  // Real-time synchronization across tabs/windows
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'skywings_session_supplier' && !e.newValue) {
+      window.location.href = 'supplier-login.html';
+      return;
+    }
+    if (['skywings_prepurchased_inventory', 'skywings_suppliers', 'skywings_bookings'].includes(e.key)) {
+      switchPanel(currentPanel);
+    }
+  });
 
   // Load default panel
   switchPanel('overview');

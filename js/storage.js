@@ -49,131 +49,143 @@ const Storage = (() => {
 
   // ── Initialize System ──
   function initialize() {
-    if (_get(KEYS.INITIALIZED)) return;
+    // 1. Seed admin if not present
+    if (!_get(KEYS.ADMINS)) {
+      _set(KEYS.ADMINS, [FlightData.DEFAULT_ADMIN]);
+    }
 
-    // Seed admin
-    _set(KEYS.ADMINS, [FlightData.DEFAULT_ADMIN]);
+    // 2. Seed demo users if not present
+    if (!_get(KEYS.USERS)) {
+      _set(KEYS.USERS, [
+        {
+          id: 'user_demo_001',
+          name: 'Rajesh Kumar',
+          email: 'rajesh@example.com',
+          password: 'demo123',
+          phone: '9876543210',
+          role: 'customer',
+          createdAt: new Date().toISOString()
+        }
+      ]);
+    }
 
-    // Seed demo users
-    _set(KEYS.USERS, [
-      {
-        id: 'user_demo_001',
-        name: 'Rajesh Kumar',
-        email: 'rajesh@example.com',
-        password: 'demo123',
-        phone: '9876543210',
-        role: 'customer',
-        createdAt: new Date().toISOString()
-      }
-    ]);
+    // 3. Seed demo agents if not present
+    if (!_get(KEYS.AGENTS)) {
+      _set(KEYS.AGENTS, [
+        {
+          id: 'agent_demo_001',
+          agencyName: 'TravelMax India',
+          ownerName: 'Priya Sharma',
+          email: 'priya@travelmax.in',
+          password: 'agent123',
+          phone: '9898989898',
+          gstNumber: '27AADCT1234F1ZP',
+          panNumber: 'ABCDE1234F',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          status: 'approved',
+          commissionRate: 5,
+          role: 'agent',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'agent_demo_002',
+          agencyName: 'Bharat Travels',
+          ownerName: 'Amit Patel',
+          email: 'amit@bharattravels.in',
+          password: 'agent123',
+          phone: '9797979797',
+          gstNumber: '24AADCT5678G1ZQ',
+          panNumber: 'FGHIJ5678K',
+          city: 'Ahmedabad',
+          state: 'Gujarat',
+          status: 'pending',
+          commissionRate: 5,
+          role: 'agent',
+          createdAt: new Date().toISOString()
+        }
+      ]);
+    }
 
-    // Seed demo agent
-    _set(KEYS.AGENTS, [
-      {
-        id: 'agent_demo_001',
-        agencyName: 'TravelMax India',
-        ownerName: 'Priya Sharma',
-        email: 'priya@travelmax.in',
-        password: 'agent123',
-        phone: '9898989898',
-        gstNumber: '27AADCT1234F1ZP',
-        panNumber: 'ABCDE1234F',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        status: 'approved',
-        commissionRate: 5,
-        role: 'agent',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'agent_demo_002',
-        agencyName: 'Bharat Travels',
-        ownerName: 'Amit Patel',
-        email: 'amit@bharattravels.in',
-        password: 'agent123',
-        phone: '9797979797',
-        gstNumber: '24AADCT5678G1ZQ',
-        panNumber: 'FGHIJ5678K',
-        city: 'Ahmedabad',
-        state: 'Gujarat',
-        status: 'pending',
-        commissionRate: 5,
-        role: 'agent',
-        createdAt: new Date().toISOString()
-      }
-    ]);
+    // 4. Seed wallets if not present
+    if (!_get(KEYS.AGENT_WALLETS)) {
+      _set(KEYS.AGENT_WALLETS, {
+        'agent_demo_001': { balance: 50000, totalEarned: 125000, totalWithdrawn: 75000 },
+        'agent_demo_002': { balance: 0, totalEarned: 0, totalWithdrawn: 0 }
+      });
+    }
 
-    // Seed wallets
-    _set(KEYS.AGENT_WALLETS, {
-      'agent_demo_001': { balance: 50000, totalEarned: 125000, totalWithdrawn: 75000 },
-      'agent_demo_002': { balance: 0, totalEarned: 0, totalWithdrawn: 0 }
-    });
+    // 5. Seed transactions if not present
+    if (!_get(KEYS.AGENT_TRANSACTIONS)) {
+      _set(KEYS.AGENT_TRANSACTIONS, {
+        'agent_demo_001': [
+          { id: 'txn_001', type: 'commission', amount: 2500, description: 'Commission: PNR ABC123', date: new Date(Date.now() - 86400000 * 2).toISOString(), balance: 50000 },
+          { id: 'txn_002', type: 'commission', amount: 3200, description: 'Commission: PNR DEF456', date: new Date(Date.now() - 86400000).toISOString(), balance: 47500 }
+        ]
+      });
+    }
 
-    // Seed transactions
-    _set(KEYS.AGENT_TRANSACTIONS, {
-      'agent_demo_001': [
-        { id: 'txn_001', type: 'commission', amount: 2500, description: 'Commission: PNR ABC123', date: new Date(Date.now() - 86400000 * 2).toISOString(), balance: 50000 },
-        { id: 'txn_002', type: 'commission', amount: 3200, description: 'Commission: PNR DEF456', date: new Date(Date.now() - 86400000).toISOString(), balance: 47500 }
-      ]
-    });
+    // 6. Seed bookings if not present
+    if (!_get(KEYS.BOOKINGS)) {
+      _set(KEYS.BOOKINGS, []);
+    }
 
-    // Seed demo bookings
-    const today = new Date();
-    const futureDate = new Date(today);
-    futureDate.setDate(today.getDate() + 7);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
+    // 7. Default markup rules if not present
+    if (!_get(KEYS.MARKUP_RULES)) {
+      _set(KEYS.MARKUP_RULES, {
+        'agent_demo_001': [
+          { id: 'mr_001', type: 'flat', amount: 200, applyTo: 'all', description: 'Default markup ₹200' }
+        ]
+      });
+    }
 
-    _set(KEYS.BOOKINGS, []);
+    // 8. Default settings if not present
+    if (!_get(KEYS.SETTINGS)) {
+      _set(KEYS.SETTINGS, {
+        gstEconomy: 5,
+        gstBusiness: 12,
+        convenienceFee: 250,
+        defaultCommission: 5,
+        minCommission: 2,
+        maxCommission: 12,
+        announcement: '',
+        maintenanceMode: false,
+        smepayEnabled: false,
+        smepayMerchantId: 'SME_DEMO_MERCHANT',
+        smepayApiKey: 'sme_sk_test_51N2xDemoKey',
+        smepayMode: 'sandbox',
+        smtpHost: 'smtp.hostinger.com',
+        smtpPort: 465,
+        smtpSecure: 'ssl',
+        smtpUsername: 'info@specialfare.in',
+        smtpPassword: 'Kairavi12#',
+        smtpSenderEmail: 'info@specialfare.in',
+        smtpSenderName: 'Special Fare',
+        whatsappEnabled: true,
+        whatsappNumber: '',
+        whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.'
+      });
+    }
 
-    // Default markup rules
-    _set(KEYS.MARKUP_RULES, {
-      'agent_demo_001': [
-        { id: 'mr_001', type: 'flat', amount: 200, applyTo: 'all', description: 'Default markup ₹200' }
-      ]
-    });
+    if (!_get(KEYS.ANNOUNCEMENTS)) {
+      _set(KEYS.ANNOUNCEMENTS, []);
+    }
+    if (!_get(KEYS.CUSTOM_FLIGHTS)) {
+      _set(KEYS.CUSTOM_FLIGHTS, []);
+    }
 
-    // Default settings
-    _set(KEYS.SETTINGS, {
-      gstEconomy: 5,
-      gstBusiness: 12,
-      convenienceFee: 250,
-      defaultCommission: 5,
-      minCommission: 2,
-      maxCommission: 12,
-      announcement: '',
-      maintenanceMode: false,
-      smepayEnabled: false,
-      smepayMerchantId: 'SME_DEMO_MERCHANT',
-      smepayApiKey: 'sme_sk_test_51N2xDemoKey',
-      smepayMode: 'sandbox',
-      smtpHost: 'smtp.hostinger.com',
-      smtpPort: 465,
-      smtpSecure: 'ssl',
-      smtpUsername: 'info@specialfare.in',
-      smtpPassword: 'Kairavi12#',
-      smtpSenderEmail: 'info@specialfare.in',
-      smtpSenderName: 'Special Fare',
-      whatsappEnabled: true,
-      whatsappNumber: '',
-      whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.'
-    });
+    // 9. Seed B2B suppliers if not present
+    if (!_get(KEYS.SUPPLIERS)) {
+      _set(KEYS.SUPPLIERS, [
+        { id: 'sup_indigo', name: 'IndiGo Bulk Desk', email: 'bulk@indigo.in', password: 'supplier123', phone: '9900112233', city: 'Gurugram', state: 'Haryana', status: 'active', createdAt: new Date().toISOString() },
+        { id: 'sup_airindia', name: 'Air India Group Sales', email: 'groups@airindia.in', password: 'supplier123', phone: '9900445566', city: 'New Delhi', state: 'Delhi', status: 'active', createdAt: new Date().toISOString() },
+        { id: 'sup_vistara', name: 'Vistara Charter Ops', email: 'charter@vistara.com', password: 'supplier123', phone: '9900778899', city: 'Gurugram', state: 'Haryana', status: 'active', createdAt: new Date().toISOString() }
+      ]);
+    }
 
-    _set(KEYS.ANNOUNCEMENTS, []);
-    _set(KEYS.CUSTOM_FLIGHTS, []);
-
-    // Seed B2B suppliers
-    _set(KEYS.SUPPLIERS, [
-      { id: 'sup_indigo', name: 'IndiGo Bulk Desk', email: 'bulk@indigo.in', password: 'supplier123', phone: '9900112233', city: 'Gurugram', state: 'Haryana', status: 'active', createdAt: new Date().toISOString() },
-      { id: 'sup_airindia', name: 'Air India Group Sales', email: 'groups@airindia.in', password: 'supplier123', phone: '9900445566', city: 'New Delhi', state: 'Delhi', status: 'active', createdAt: new Date().toISOString() },
-      { id: 'sup_vistara', name: 'Vistara Charter Ops', email: 'charter@vistara.com', password: 'supplier123', phone: '9900778899', city: 'Gurugram', state: 'Haryana', status: 'active', createdAt: new Date().toISOString() }
-    ]);
-
-    // Seed default pre-purchased PNR blocks
-    const nextWeek = new Date();
-    nextWeek.setDate(nextWeek.getDate() + 7);
-    const nextWeekStr = nextWeek.toISOString().split('T')[0];
-
-    _set(KEYS.PREPURCHASED_INVENTORY, []);
+    if (!_get(KEYS.PREPURCHASED_INVENTORY)) {
+      _set(KEYS.PREPURCHASED_INVENTORY, []);
+    }
 
     _set(KEYS.INITIALIZED, true);
   }

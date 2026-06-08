@@ -782,4 +782,18 @@ const Utils = (() => {
 
 })();
 
+// File protocol warning banner for local storage isolation bypass instructions
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.location.protocol === 'file:') {
+    const banner = document.createElement('div');
+    banner.id = 'file-protocol-warning-banner';
+    banner.style.cssText = 'background: linear-gradient(135deg, #78350f, #92400e); color: #fef3c7; border-bottom: 1px solid #d97706; padding: 12px 24px; font-size: 0.85rem; font-family: sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; z-index: 999999; position: relative; line-height:1.5; text-align:center;';
+    banner.innerHTML = `
+      <span>⚠️ <strong>Running via file:// protocol:</strong> Modern browsers isolate LocalStorage per file and block CORS mail requests. For registration data to synchronize with the Admin Panel, please run a local web server (e.g., VS Code Live Server extension or running <code>npm start</code>) and access the application via <code>http://localhost:3000</code>.</span>
+      <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#fef3c7; font-weight:bold; cursor:pointer; font-size:1.1rem; margin-left:12px; line-height:1;">✕</button>
+    `;
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+});
+
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Supplier Portal — Special Fare Extranet</title>
-  <link rel="stylesheet" href="css/index.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/index.css?v=1.2.2" />
   <style>
     .auth-page {
       min-height: 100vh;
@@ -415,9 +415,9 @@
     </div>
   </div>
 
-  <script src="js/data.js?v=1.2.1"></script>
-  <script src="js/storage.js?v=1.2.1"></script>
-  <script src="js/utils.js?v=1.2.1"></script>
+  <script src="js/data.js?v=1.2.2"></script>
+  <script src="js/storage.js?v=1.2.2"></script>
+  <script src="js/utils.js?v=1.2.2"></script>
   <script>
     const session = Storage.getSession();
     if (session && session.role === 'supplier') {
@@ -561,7 +561,7 @@
               Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
               showSupplierResetStep(2);
             } else {
-              Utils.showToast('Failed to send verification email. Please check SMTP settings. For testing, your OTP code is: ' + currentOTP, 'warning', 15000);
+              Utils.showToast('Email failed (CORS/adblocker block or SMTP misconfig). Fix: run "npm start" (localhost) or disable adblocker. For testing, your OTP is: ' + currentOTP, 'warning', 20000);
               showSupplierResetStep(2);
             }
           });

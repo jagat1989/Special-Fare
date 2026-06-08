@@ -740,7 +740,7 @@ const App = (() => {
               Utils.showToast('Verification code has been sent to your email address.', 'success', 6000);
               showStep(2);
             } else {
-              Utils.showToast('Failed to send verification email. Please check SMTP settings. For testing, your OTP code is: ' + currentOTP, 'warning', 15000);
+              Utils.showToast('Email failed (CORS/adblocker block or SMTP misconfig). Fix: run "npm start" (localhost) or disable adblocker. For testing, your OTP is: ' + currentOTP, 'warning', 20000);
               showStep(2);
             }
           });

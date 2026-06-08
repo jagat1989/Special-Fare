@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "build": "node build.js",
-    "start": "echo 'This is a static site. Please serve the root folder directly.'"
+    "start": "node server.js"
   },
   "dependencies": {},
   "engines": {

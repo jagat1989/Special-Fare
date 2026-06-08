@@ -391,24 +391,6 @@ const App = (() => {
     }, 600);
   }
 
-  // ── Quick Search Fill ─────────────────────────────────────────────────────
-  window.fillQuickSearch = function(from, to) {
-    const fromAirport = FlightData.getAirport(from);
-    const toAirport   = FlightData.getAirport(to);
-    if (!fromAirport || !toAirport) return;
-
-    const fromInput = document.getElementById('from-input');
-    const toInput   = document.getElementById('to-input');
-    if (fromInput) fromInput.value = `${fromAirport.city} (${fromAirport.code})`;
-    if (toInput)   toInput.value   = `${toAirport.city} (${toAirport.code})`;
-    fromCode = from;
-    toCode   = to;
-
-    Utils.showToast(`Route set: ${fromAirport.city} → ${toAirport.city}`, 'success');
-
-    // Scroll to search box on mobile
-    document.getElementById('search-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
 
 
 

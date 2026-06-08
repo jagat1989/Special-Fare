@@ -481,17 +481,17 @@ const Storage = (() => {
 
   function getBookingsByUser(userId) {
     const bookings = _get(KEYS.BOOKINGS) || [];
-    return bookings.filter(b => b.userId === userId).sort((a, b) => new Date(b.bookedAt) - new Date(a.bookedAt));
+    return bookings.filter(b => b.userId === userId).sort((a, b) => new Date(b.bookedAt || 0) - new Date(a.bookedAt || 0));
   }
 
   function getBookingsByAgent(agentId) {
     const bookings = _get(KEYS.BOOKINGS) || [];
-    return bookings.filter(b => b.agentId === agentId).sort((a, b) => new Date(b.bookedAt) - new Date(a.bookedAt));
+    return bookings.filter(b => b.agentId === agentId).sort((a, b) => new Date(b.bookedAt || 0) - new Date(a.bookedAt || 0));
   }
 
   function getAllBookings() {
     const bookings = _get(KEYS.BOOKINGS) || [];
-    return bookings.sort((a, b) => new Date(b.bookedAt) - new Date(a.bookedAt));
+    return bookings.sort((a, b) => new Date(b.bookedAt || 0) - new Date(a.bookedAt || 0));
   }
 
   function updateBookingStatus(bookingId, status) {
@@ -955,7 +955,7 @@ const Storage = (() => {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const count = confirmed.filter(b => b.bookedAt.startsWith(dateStr)).length;
+      const count = confirmed.filter(b => b.bookedAt && b.bookedAt.startsWith(dateStr)).length;
       last30Days.push({ date: dateStr, count });
     }
 

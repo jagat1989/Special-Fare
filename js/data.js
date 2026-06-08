@@ -517,7 +517,7 @@ const FlightData = (() => {
     password: 'admin123',
     name: 'System Administrator',
     role: 'admin',
-    email: 'admin@specialfare.in',
+    email: 'specialfare21@gmail.com',
     createdAt: new Date().toISOString()
   };
 

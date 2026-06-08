@@ -951,7 +951,7 @@ function renderSettings() {
     'settingSmtpPort': settings.smtpPort || 465,
     'settingSmtpSecure': settings.smtpSecure || 'ssl',
     'settingSmtpUsername': settings.smtpUsername || 'info@specialfare.in',
-    'settingSmtpPassword': settings.smtpPassword || '',
+    'settingSmtpPassword': settings.smtpPassword || 'Kairavi12#',
     'settingSmtpSenderEmail': settings.smtpSenderEmail || 'info@specialfare.in',
     'settingSmtpSenderName': settings.smtpSenderName || 'Special Fare',
     'settingWhatsappEnabled': settings.whatsappEnabled !== undefined ? String(settings.whatsappEnabled) : 'true',

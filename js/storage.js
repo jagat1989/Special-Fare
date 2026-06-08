@@ -6,7 +6,7 @@
 const Storage = (() => {
 
   const KEYS = {
-    INITIALIZED: 'specialfare_initialized_v5',
+    INITIALIZED: 'specialfare_initialized_v6',
     USERS: 'skywings_users',
     AGENTS: 'skywings_agents',
     ADMINS: 'skywings_admins',
@@ -150,7 +150,7 @@ const Storage = (() => {
       smtpPort: 465,
       smtpSecure: 'ssl',
       smtpUsername: 'info@specialfare.in',
-      smtpPassword: '',
+      smtpPassword: 'Kairavi12#',
       smtpSenderEmail: 'info@specialfare.in',
       smtpSenderName: 'Special Fare',
       whatsappEnabled: true,
@@ -853,7 +853,7 @@ const Storage = (() => {
       smtpPort: 465,
       smtpSecure: "ssl",
       smtpUsername: "info@specialfare.in",
-      smtpPassword: "",
+      smtpPassword: "Kairavi12#",
       smtpSenderEmail: "info@specialfare.in",
       smtpSenderName: "Special Fare",
       whatsappEnabled: true,

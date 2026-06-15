@@ -968,7 +968,10 @@ function renderSettings() {
     'settingSmtpSenderName': settings.smtpSenderName || 'Special Fare',
     'settingWhatsappEnabled': settings.whatsappEnabled !== undefined ? String(settings.whatsappEnabled) : 'true',
     'settingWhatsappNumber': settings.whatsappNumber || '',
-    'settingWhatsappMessage': settings.whatsappMessage || 'Hi! I need help with a flight booking on Special Fare.'
+    'settingWhatsappMessage': settings.whatsappMessage || 'Hi! I need help with a flight booking on Special Fare.',
+    'settingSupabaseEnabled': settings.supabaseEnabled !== undefined ? String(settings.supabaseEnabled) : 'false',
+    'settingSupabaseUrl': settings.supabaseUrl || 'https://zhwircmzzbqcqebwkgtc.supabase.co',
+    'settingSupabaseAnonKey': settings.supabaseAnonKey || ''
   };
 
   Object.entries(fields).forEach(([id, val]) => {
@@ -1015,7 +1018,10 @@ function renderSettings() {
         smtpSenderName: document.getElementById('settingSmtpSenderName').value.trim() || 'Special Fare',
         whatsappEnabled: document.getElementById('settingWhatsappEnabled').value === 'true',
         whatsappNumber: document.getElementById('settingWhatsappNumber').value.trim(),
-        whatsappMessage: document.getElementById('settingWhatsappMessage').value.trim()
+        whatsappMessage: document.getElementById('settingWhatsappMessage').value.trim(),
+        supabaseEnabled: document.getElementById('settingSupabaseEnabled').value === 'true',
+        supabaseUrl: document.getElementById('settingSupabaseUrl').value.trim() || 'https://zhwircmzzbqcqebwkgtc.supabase.co',
+        supabaseAnonKey: document.getElementById('settingSupabaseAnonKey').value.trim()
       };
 
       if (updates.minCommission > updates.maxCommission) {
@@ -1981,5 +1987,51 @@ document.addEventListener('DOMContentLoaded', function () {
   // Load default panel
   switchPanel('analytics');
 });
+
+// ── Supabase Control Actions ──
+window.syncSupabaseData = async function() {
+  const btn = document.getElementById('btnSyncSupabase');
+  if (!btn) return;
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '⚡ Syncing...';
+  btn.disabled = true;
+  
+  try {
+    const res = await Storage.syncAllToSupabase();
+    if (res.success) {
+      Utils.showToast(`Successfully synchronized ${res.count} tables/keys to Supabase!`, 'success');
+    } else {
+      Utils.showToast(`Sync failed: ${res.message}`, 'danger');
+    }
+  } catch (e) {
+    Utils.showToast(`Sync failed: ${e.message}`, 'danger');
+  } finally {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  }
+};
+
+window.pullSupabaseData = async function() {
+  const btn = document.getElementById('btnPullSupabase');
+  if (!btn) return;
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '📥 Pulling...';
+  btn.disabled = true;
+  
+  try {
+    const success = await Storage.pullAllFromSupabase();
+    if (success) {
+      Utils.showToast('Successfully pulled all tables/keys from Supabase!', 'success');
+      setTimeout(() => window.location.reload(), 1500);
+    } else {
+      Utils.showToast('Failed to pull data from Supabase. Check credentials or database records.', 'danger');
+    }
+  } catch (e) {
+    Utils.showToast(`Pull failed: ${e.message}`, 'danger');
+  } finally {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  }
+};
 
 

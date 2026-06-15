@@ -22,6 +22,141 @@ const Storage = (() => {
     PREPURCHASED_INVENTORY: 'skywings_prepurchased_inventory'
   };
 
+  // ── Supabase Integration ──
+  let supabaseConfig = {
+    enabled: false,
+    url: 'https://zhwircmzzbqcqebwkgtc.supabase.co',
+    anonKey: ''
+  };
+
+  function loadSupabaseConfig() {
+    const settings = _get(KEYS.SETTINGS);
+    if (settings) {
+      supabaseConfig.enabled = settings.supabaseEnabled || false;
+      supabaseConfig.url = settings.supabaseUrl || 'https://zhwircmzzbqcqebwkgtc.supabase.co';
+      supabaseConfig.anonKey = settings.supabaseAnonKey || '';
+    }
+
+    // Try fetching from server (.env config override)
+    fetch('/api/supabase-config')
+      .then(res => res.json())
+      .then(config => {
+        if (config.url && config.anonKey) {
+          supabaseConfig.url = config.url;
+          supabaseConfig.anonKey = config.anonKey;
+          supabaseConfig.enabled = true; // Auto-enable if configured via .env
+          console.log('Supabase credentials successfully loaded from server .env file');
+          
+          // Re-trigger pull if first load and not initialized
+          if (!localStorage.getItem(KEYS.INITIALIZED)) {
+            pullAllFromSupabase();
+          }
+        }
+      })
+      .catch(err => {
+        // Safe to ignore if running under file:// or endpoint is unreachable
+      });
+  }
+
+  async function syncToSupabase(key, value) {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.anonKey) return;
+    if (key.startsWith(KEYS.SESSION)) return;
+
+    try {
+      const url = `${supabaseConfig.url}/rest/v1/app_storage`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseConfig.anonKey,
+          'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          key: key,
+          value: value,
+          updated_at: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Supabase sync error:', key, response.status, response.statusText);
+      }
+    } catch (e) {
+      console.error('Supabase sync network error:', key, e);
+    }
+  }
+
+  async function deleteFromSupabase(key) {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.anonKey) return;
+    if (key.startsWith(KEYS.SESSION)) return;
+
+    try {
+      const url = `${supabaseConfig.url}/rest/v1/app_storage?key=eq.${key}`;
+      await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'apikey': supabaseConfig.anonKey,
+          'Authorization': `Bearer ${supabaseConfig.anonKey}`
+        }
+      });
+    } catch (e) {
+      console.error('Supabase delete error:', key, e);
+    }
+  }
+
+  async function pullAllFromSupabase() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.anonKey) return false;
+    try {
+      const url = `${supabaseConfig.url}/rest/v1/app_storage?select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseConfig.anonKey,
+          'Authorization': `Bearer ${supabaseConfig.anonKey}`
+        }
+      });
+      if (response.ok) {
+        const rows = await response.json();
+        if (rows && rows.length > 0) {
+          rows.forEach(row => {
+            localStorage.setItem(row.key, JSON.stringify(row.value));
+          });
+          console.log(`Successfully pulled ${rows.length} keys from Supabase!`);
+          window.dispatchEvent(new Event('storage'));
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Supabase pull error:', e);
+    }
+    return false;
+  }
+
+  async function syncAllToSupabase() {
+    if (!supabaseConfig.enabled || !supabaseConfig.url || !supabaseConfig.anonKey) {
+      return { success: false, message: 'Supabase is not configured or disabled!' };
+    }
+    
+    try {
+      let count = 0;
+      for (const [key, value] of Object.entries(KEYS)) {
+        if (value === KEYS.INITIALIZED || value.startsWith(KEYS.SESSION)) {
+          continue;
+        }
+        const data = _get(value);
+        if (data !== null) {
+          await syncToSupabase(value, data);
+          count++;
+        }
+      }
+      return { success: true, count: count };
+    } catch (e) {
+      console.error('Force sync error:', e);
+      return { success: false, message: e.message };
+    }
+  }
+
   // ── LocalStorage Helpers ──
   function _get(key) {
     try {
@@ -36,6 +171,9 @@ const Storage = (() => {
   function _set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      if (supabaseConfig.enabled) {
+        syncToSupabase(key, value);
+      }
       return true;
     } catch (e) {
       console.error('Storage write error:', key, e);
@@ -45,10 +183,25 @@ const Storage = (() => {
 
   function _remove(key) {
     localStorage.removeItem(key);
+    if (supabaseConfig.enabled) {
+      deleteFromSupabase(key);
+    }
   }
 
   // ── Initialize System ──
-  function initialize() {
+  async function initialize() {
+    // Load config first
+    loadSupabaseConfig();
+
+    // If Supabase is enabled, try pulling initial data
+    if (supabaseConfig.enabled) {
+      try {
+        await pullAllFromSupabase();
+      } catch (e) {
+        console.error('Failed to pull initial data from Supabase:', e);
+      }
+    }
+
     // 1. Seed admin if not present
     if (!_get(KEYS.ADMINS)) {
       _set(KEYS.ADMINS, [FlightData.DEFAULT_ADMIN]);
@@ -163,7 +316,10 @@ const Storage = (() => {
         smtpSenderName: 'Special Fare',
         whatsappEnabled: true,
         whatsappNumber: '',
-        whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.'
+        whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.',
+        supabaseEnabled: false,
+        supabaseUrl: 'https://zhwircmzzbqcqebwkgtc.supabase.co',
+        supabaseAnonKey: ''
       });
     }
 
@@ -932,6 +1088,7 @@ const Storage = (() => {
     const settings = _get(KEYS.SETTINGS) || {};
     Object.assign(settings, updates);
     _set(KEYS.SETTINGS, settings);
+    loadSupabaseConfig();
     return { success: true, settings };
   }
 
@@ -1250,7 +1407,12 @@ const Storage = (() => {
     resetAllData,
     // Password Recovery
     verifyEmailExists,
-    resetUserPassword
+    resetUserPassword,
+    // Supabase
+    loadSupabaseConfig,
+    syncAllToSupabase,
+    pullAllFromSupabase,
+    initialize
   };
 
 })();

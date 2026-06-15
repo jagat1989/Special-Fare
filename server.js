@@ -19,6 +19,29 @@ const MIME_TYPES = {
 const server = http.createServer((req, res) => {
   // Normalize URL path
   let filePath = req.url.split('?')[0];
+
+  if (filePath === '/api/supabase-config') {
+    const envPath = path.join(__dirname, '.env');
+    let config = { url: '', anonKey: '' };
+    try {
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const lines = envContent.split(/\r?\n/);
+        lines.forEach(line => {
+          const match = line.match(/^\s*SUPABASE_URL\s*=\s*(.+)$/);
+          const matchKey = line.match(/^\s*SUPABASE_ANON_KEY\s*=\s*(.+)$/);
+          if (match) config.url = match[1].trim();
+          if (matchKey) config.anonKey = matchKey[1].trim();
+        });
+      }
+    } catch (e) {
+      console.error('Error reading .env file:', e);
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.end(JSON.stringify(config));
+    return;
+  }
+
   if (filePath === '/') {
     filePath = '/index.html';
   }

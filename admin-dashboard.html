@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel — Special Fare</title>
-  <link rel="stylesheet" href="css/index.css?v=1.2.9" />
+  <link rel="stylesheet" href="css/index.css?v=1.3.0" />
   <style>
     /* ── Admin-specific overrides ── */
     .admin-navbar {
@@ -1350,6 +1350,35 @@
                 <input type="password" id="settingSmepayApiKey" class="form-control" placeholder="sme_sk_••••••••••••••••" />
               </div>
             </div>
+          <div class="settings-section">
+            <div class="settings-section-title">🔌 Supabase Cloud Synchronization</div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Real-time Sync status</label>
+                <select id="settingSupabaseEnabled" class="form-control">
+                  <option value="false">Disabled (LocalStorage Only)</option>
+                  <option value="true">Enabled (Auto-Sync to Supabase)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Supabase Project URL</label>
+                <input type="text" id="settingSupabaseUrl" class="form-control" placeholder="https://your-project-id.supabase.co" />
+              </div>
+            </div>
+            <div class="form-row-2" style="align-items: flex-end;">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Supabase Anon Key</label>
+                <input type="password" id="settingSupabaseAnonKey" class="form-control" placeholder="your-anon-public-key" />
+              </div>
+              <div class="form-group" style="margin-bottom:0; display:flex; gap:10px;">
+                <button type="button" class="btn btn-secondary w-full" id="btnPullSupabase" onclick="pullSupabaseData()" style="height:46px;">
+                  📥 Pull Cloud Data
+                </button>
+                <button type="button" class="btn btn-primary w-full" id="btnSyncSupabase" onclick="syncSupabaseData()" style="height:46px;">
+                  🚀 Sync All Now
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="settings-section">
@@ -1819,10 +1848,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/data.js?v=1.2.9"></script>
-  <script src="js/storage.js?v=1.2.9"></script>
-  <script src="js/utils.js?v=1.2.9"></script>
-  <script src="js/admin.js?v=1.2.9"></script>
+  <script src="js/data.js?v=1.3.0"></script>
+  <script src="js/storage.js?v=1.3.0"></script>
+  <script src="js/utils.js?v=1.3.0"></script>
+  <script src="js/admin.js?v=1.3.0"></script>
 </body>
 </html>
 

@@ -317,9 +317,9 @@ const App = (() => {
       toCode = tmpCode;
 
       // Visual feedback
-      swapBtn.style.transform = 'translateY(-50%) rotate(180deg)';
+      swapBtn.style.transform = 'rotate(180deg)';
       setTimeout(() => {
-        swapBtn.style.transform = 'translateY(-50%) rotate(0deg)';
+        swapBtn.style.transform = 'rotate(0deg)';
       }, 300);
     });
   }

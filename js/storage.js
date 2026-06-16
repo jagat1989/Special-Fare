@@ -6,7 +6,7 @@
 const Storage = (() => {
 
   const KEYS = {
-    INITIALIZED: 'specialfare_initialized_v6',
+    INITIALIZED: 'specialfare_initialized_v7',
     USERS: 'skywings_users',
     AGENTS: 'skywings_agents',
     ADMINS: 'skywings_admins',
@@ -24,9 +24,9 @@ const Storage = (() => {
 
   // ── Supabase Integration ──
   let supabaseConfig = {
-    enabled: false,
+    enabled: true,
     url: 'https://zhwircmzzbqcqebwkgtc.supabase.co',
-    anonKey: ''
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpod2lyY216emJxY3FlYndrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjU3MDgsImV4cCI6MjA5Njc0MTcwOH0.8v5FReubvXUAjx6mmXsDu1boaaMuYei-g2EqCVIW9Rg'
   };
 
   function loadSupabaseConfig() {
@@ -317,9 +317,9 @@ const Storage = (() => {
         whatsappEnabled: true,
         whatsappNumber: '',
         whatsappMessage: 'Hi! I need help with a flight booking on Special Fare.',
-        supabaseEnabled: false,
+        supabaseEnabled: true,
         supabaseUrl: 'https://zhwircmzzbqcqebwkgtc.supabase.co',
-        supabaseAnonKey: ''
+        supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpod2lyY216emJxY3FlYndrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjU3MDgsImV4cCI6MjA5Njc0MTcwOH0.8v5FReubvXUAjx6mmXsDu1boaaMuYei-g2EqCVIW9Rg'
       });
     }
 

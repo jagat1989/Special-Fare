@@ -6,7 +6,7 @@
 const Storage = (() => {
 
   const KEYS = {
-    INITIALIZED: 'specialfare_initialized_v7',
+    INITIALIZED: 'specialfare_initialized_v8',
     USERS: 'skywings_users',
     AGENTS: 'skywings_agents',
     ADMINS: 'skywings_admins',
@@ -121,6 +121,14 @@ const Storage = (() => {
         if (rows && rows.length > 0) {
           rows.forEach(row => {
             localStorage.setItem(row.key, JSON.stringify(row.value));
+            try {
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: row.key,
+                newValue: JSON.stringify(row.value)
+              }));
+            } catch (err) {
+              console.warn('StorageEvent dispatch failed:', err);
+            }
           });
           console.log(`Successfully pulled ${rows.length} keys from Supabase!`);
           window.dispatchEvent(new Event('storage'));
@@ -190,6 +198,25 @@ const Storage = (() => {
 
   // ── Initialize System ──
   async function initialize() {
+    // Check if we need to migrate/clear old cache
+    if (!localStorage.getItem(KEYS.INITIALIZED)) {
+      console.log('New initialization version detected or first run. Clearing old storage cache...');
+      for (const [k, v] of Object.entries(KEYS)) {
+        if (v !== KEYS.INITIALIZED) {
+          localStorage.removeItem(v);
+        }
+      }
+      // Also clear any legacy version markers to force clean state
+      localStorage.removeItem('specialfare_initialized_v7');
+      localStorage.removeItem('specialfare_initialized_v6');
+      localStorage.removeItem('specialfare_initialized_v5');
+      localStorage.removeItem('specialfare_initialized_v4');
+      localStorage.removeItem('specialfare_initialized_v3');
+      localStorage.removeItem('specialfare_initialized_v2');
+      localStorage.removeItem('specialfare_initialized_v1');
+      localStorage.removeItem('specialfare_initialized');
+    }
+
     // Load config first
     loadSupabaseConfig();
 

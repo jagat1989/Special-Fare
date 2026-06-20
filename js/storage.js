@@ -119,18 +119,62 @@ const Storage = (() => {
       if (response.ok) {
         const rows = await response.json();
         if (rows && rows.length > 0) {
+          let needsSyncBack = false;
+
+          // Helper to merge local changes with Supabase remote data (prevents race conditions & data loss)
+          const mergeData = (key, remoteVal) => {
+            const localVal = _get(key);
+            if (localVal === null) return remoteVal;
+
+            // Merge Arrays (users, agents, bookings, suppliers, etc.)
+            if (Array.isArray(remoteVal) && Array.isArray(localVal)) {
+              const merged = [...remoteVal];
+              const getUniqueId = (item) => item.id || item.pnr || item.pnrCode || item.username || item.email;
+              
+              localVal.forEach(localItem => {
+                const localId = getUniqueId(localItem);
+                if (localId) {
+                  const exists = merged.some(remoteItem => getUniqueId(remoteItem) === localId);
+                  if (!exists) {
+                    merged.push(localItem);
+                  }
+                }
+              });
+              return merged;
+            }
+
+            // Merge Objects (wallets, transactions, markups, settings)
+            if (typeof remoteVal === 'object' && remoteVal !== null && typeof localVal === 'object' && localVal !== null) {
+              return Object.assign({}, localVal, remoteVal);
+            }
+
+            return remoteVal;
+          };
+
           rows.forEach(row => {
-            localStorage.setItem(row.key, JSON.stringify(row.value));
+            const mergedVal = mergeData(row.key, row.value);
+            const remoteStr = JSON.stringify(row.value);
+            const mergedStr = JSON.stringify(mergedVal);
+
+            localStorage.setItem(row.key, mergedStr);
+
+            // If we have local unsynced records, sync them back to Supabase automatically
+            if (remoteStr !== mergedStr) {
+              needsSyncBack = true;
+              syncToSupabase(row.key, mergedVal);
+            }
+
             try {
               window.dispatchEvent(new StorageEvent('storage', {
                 key: row.key,
-                newValue: JSON.stringify(row.value)
+                newValue: mergedStr
               }));
             } catch (err) {
               console.warn('StorageEvent dispatch failed:', err);
             }
           });
-          console.log(`Successfully pulled ${rows.length} keys from Supabase!`);
+
+          console.log(`Successfully pulled and merged ${rows.length} keys from Supabase!`);
           window.dispatchEvent(new Event('storage'));
           return true;
         }

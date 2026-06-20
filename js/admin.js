@@ -2034,4 +2034,80 @@ window.pullSupabaseData = async function() {
   }
 };
 
+window.testSmtpConnection = async function() {
+  const recipient = prompt("Enter recipient email address for the test message:", "specialfare21@gmail.com");
+  if (!recipient || recipient.trim() === '') return;
+
+  const btn = document.getElementById('btnTestSmtp');
+  if (!btn) return;
+  const oldText = btn.innerHTML;
+  btn.innerHTML = '⏳ Testing...';
+  btn.disabled = true;
+
+  try {
+    const host = document.getElementById('settingSmtpHost').value.trim();
+    const port = parseInt(document.getElementById('settingSmtpPort').value) || 465;
+    const secure = document.getElementById('settingSmtpSecure').value;
+    const username = document.getElementById('settingSmtpUsername').value.trim();
+    const password = document.getElementById('settingSmtpPassword').value;
+    const senderEmail = document.getElementById('settingSmtpSenderEmail').value.trim() || username;
+    const senderName = document.getElementById('settingSmtpSenderName').value.trim() || 'Special Fare';
+
+    if (!username || !password) {
+      Utils.showToast('Please enter SMTP Username (Email) and Password first.', 'warning');
+      return;
+    }
+
+    // Save temporary settings to localStorage
+    const currentSettings = Storage.getSettings() || {};
+    const tempSettings = Object.assign({}, currentSettings, {
+      smtpHost: host,
+      smtpPort: port,
+      smtpSecure: secure,
+      smtpUsername: username,
+      smtpPassword: password,
+      smtpSenderEmail: senderEmail,
+      smtpSenderName: senderName
+    });
+
+    // Save to settings locally and cloud
+    Storage.updateSettings(tempSettings);
+
+    Utils.showToast('Sending test email via SMTP...', 'info');
+
+    const success = await Utils.sendEmail({
+      to: recipient,
+      subject: 'SMTP Connection Test - Special Fare',
+      body: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+          <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 24px; text-align: center;">
+            <h2 style="margin: 0; font-size: 24px;">📧 SMTP Connection Successful!</h2>
+          </div>
+          <div style="padding: 24px; color: #333; line-height: 1.6;">
+            <p>Dear Administrator,</p>
+            <p>This is a test email confirming that your SMTP connection settings on Special Fare are configured correctly and working!</p>
+            <p><strong>Config Details:</strong></p>
+            <ul>
+              <li><strong>Host:</strong> ${host}</li>
+              <li><strong>Port:</strong> ${port} (${secure.toUpperCase()})</li>
+              <li><strong>Username:</strong> ${username}</li>
+              <li><strong>Sender Name:</strong> ${senderName}</li>
+            </ul>
+            <p>Best regards,<br>Special Fare System</p>
+          </div>
+        </div>
+      `
+    });
+
+    if (success) {
+      Utils.showToast('Test email sent successfully! Please check your inbox.', 'success', 8000);
+    }
+  } catch (e) {
+    Utils.showToast(`SMTP Test failed: ${e.message}`, 'danger', 8000);
+  } finally {
+    btn.innerHTML = oldText;
+    btn.disabled = false;
+  }
+};
+
 

@@ -673,12 +673,6 @@ const Utils = (() => {
   async function sendEmail({ to, subject, body }) {
     try {
       const settings = Storage.getSettings();
-      if (!settings.smtpUsername || !settings.smtpPassword) {
-        console.warn('SMTP credentials are not configured. Email not sent.');
-        return false;
-      }
-
-      // Extract raw email address if name-formatted (e.g. "Special Fare <info@specialfare.in>" -> "info@specialfare.in")
       let fromEmail = settings.smtpSenderEmail || settings.smtpUsername || 'info@specialfare.in';
       const emailRegex = /<([^>]+)>/;
       const match = fromEmail.match(emailRegex);
@@ -686,6 +680,57 @@ const Utils = (() => {
         fromEmail = match[1].trim();
       } else {
         fromEmail = fromEmail.trim();
+      }
+      const fromName = settings.smtpSenderName || 'Special Fare';
+
+      // 1. Try sending via local PHP mailer endpoint first (failsafe, bypasses frontend CORS & ad-blockers)
+      try {
+        console.log('Attempting to send email via local PHP mailer...');
+        const response = await fetch('/send-email.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            to: to,
+            subject: subject,
+            body: body,
+            fromEmail: fromEmail,
+            fromName: fromName
+          })
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData && resData.success) {
+            console.log('Email successfully sent via PHP mailer!');
+            
+            // Also send copy to admin if not already the recipient
+            const adminEmail = 'specialfare21@gmail.com';
+            if (to.trim().toLowerCase() !== adminEmail) {
+              fetch('/send-email.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  to: adminEmail,
+                  subject: `[Admin Alert] ${subject}`,
+                  body: body,
+                  fromEmail: fromEmail,
+                  fromName: fromName
+                })
+              }).catch(() => {});
+            }
+            return true;
+          }
+        }
+      } catch (phpErr) {
+        console.warn('Local PHP mailer failed or not supported, falling back to SmtpJS:', phpErr);
+      }
+
+      // 2. Fallback to SmtpJS (useful for localhost node server or file://)
+      if (!settings.smtpUsername || !settings.smtpPassword) {
+        console.warn('SMTP credentials are not configured. Email not sent.');
+        return false;
       }
 
       const emailConfig = {
@@ -699,7 +744,7 @@ const Utils = (() => {
         Body: body
       };
 
-      console.log(`Sending email to ${to} via SMTP...`);
+      console.log(`Sending email to ${to} via SMTP (SmtpJS)...`);
       const response = await Email.send(emailConfig);
       console.log('SmtpJS Response:', response);
 

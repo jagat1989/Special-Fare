@@ -686,18 +686,30 @@ const Utils = (() => {
       // 1. Try sending via local PHP mailer endpoint first (failsafe, bypasses frontend CORS & ad-blockers)
       try {
         console.log('Attempting to send email via local PHP mailer...');
+        const smtpPayload = {
+          to: to,
+          subject: subject,
+          body: body,
+          fromEmail: fromEmail,
+          fromName: fromName
+        };
+
+        if (settings.smtpUsername && settings.smtpPassword) {
+          smtpPayload.smtp = {
+            host: settings.smtpHost || 'smtp.hostinger.com',
+            port: settings.smtpPort || 465,
+            secure: settings.smtpSecure || 'ssl',
+            username: settings.smtpUsername,
+            password: settings.smtpPassword
+          };
+        }
+
         const response = await fetch('/send-email.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            to: to,
-            subject: subject,
-            body: body,
-            fromEmail: fromEmail,
-            fromName: fromName
-          })
+          body: JSON.stringify(smtpPayload)
         });
 
         if (response.ok) {
@@ -708,19 +720,19 @@ const Utils = (() => {
             // Also send copy to admin if not already the recipient
             const adminEmail = 'specialfare21@gmail.com';
             if (to.trim().toLowerCase() !== adminEmail) {
+              const adminPayload = Object.assign({}, smtpPayload, {
+                to: adminEmail,
+                subject: `[Admin Alert] ${subject}`
+              });
               fetch('/send-email.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  to: adminEmail,
-                  subject: `[Admin Alert] ${subject}`,
-                  body: body,
-                  fromEmail: fromEmail,
-                  fromName: fromName
-                })
+                body: JSON.stringify(adminPayload)
               }).catch(() => {});
             }
             return true;
+          } else {
+            console.warn('PHP mailer returned failure:', resData ? resData.error : 'Unknown error');
           }
         }
       } catch (phpErr) {

@@ -37,16 +37,18 @@ try {
     console.log('✓ Copied JS files');
   }
 
-  // Copy HTML & config files from root
+  // Copy HTML, PHP & config files from root
   const rootFiles = fs.readdirSync('.');
   let htmlCount = 0;
+  let phpCount = 0;
   for (let file of rootFiles) {
-    if (file.endsWith('.html') || file === '.env.example' || file === '.gitignore') {
+    if (file.endsWith('.html') || file.endsWith('.php') || file === '.env.example' || file === '.gitignore') {
       fs.copyFileSync(file, path.join('dist', file));
       if (file.endsWith('.html')) htmlCount++;
+      if (file.endsWith('.php')) phpCount++;
     }
   }
-  console.log(`✓ Copied ${htmlCount} HTML pages`);
+  console.log(`✓ Copied ${htmlCount} HTML pages and ${phpCount} PHP files`);
   console.log('✓ Build completed successfully! Output folder: dist/');
 } catch (err) {
   console.error('Error building project:', err);

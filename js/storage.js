@@ -31,10 +31,22 @@ const Storage = (() => {
 
   function loadSupabaseConfig() {
     const settings = _get(KEYS.SETTINGS);
+    const defaultUrl = 'https://zhwircmzzbqcqebwkgtc.supabase.co';
+    const defaultAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpod2lyY216emJxY3FlYndrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjU3MDgsImV4cCI6MjA5Njc0MTcwOH0.8v5FReubvXUAjx6mmXsDu1boaaMuYei-g2EqCVIW9Rg';
+
     if (settings) {
-      supabaseConfig.enabled = settings.supabaseEnabled || false;
-      supabaseConfig.url = settings.supabaseUrl || 'https://zhwircmzzbqcqebwkgtc.supabase.co';
-      supabaseConfig.anonKey = settings.supabaseAnonKey || '';
+      supabaseConfig.enabled = settings.supabaseEnabled !== false;
+      supabaseConfig.url = settings.supabaseUrl || defaultUrl;
+      const savedKey = (settings.supabaseAnonKey || '').trim();
+      if (!savedKey || savedKey.includes('undefined') || savedKey.length < 10) {
+        supabaseConfig.anonKey = defaultAnonKey;
+      } else {
+        supabaseConfig.anonKey = savedKey;
+      }
+    } else {
+      supabaseConfig.enabled = true;
+      supabaseConfig.url = defaultUrl;
+      supabaseConfig.anonKey = defaultAnonKey;
     }
 
     // Try fetching from server (.env config override)
@@ -263,6 +275,29 @@ const Storage = (() => {
 
     // Load config first
     loadSupabaseConfig();
+
+    // Ensure existing settings get migrated if they don't have the new keys
+    const settings = _get(KEYS.SETTINGS);
+    if (settings) {
+      let changed = false;
+      if (settings.supabaseEnabled === undefined) {
+        settings.supabaseEnabled = true;
+        changed = true;
+      }
+      if (!settings.supabaseUrl) {
+        settings.supabaseUrl = 'https://zhwircmzzbqcqebwkgtc.supabase.co';
+        changed = true;
+      }
+      const defaultAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpod2lyY216emJxY3FlYndrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjU3MDgsImV4cCI6MjA5Njc0MTcwOH0.8v5FReubvXUAjx6mmXsDu1boaaMuYei-g2EqCVIW9Rg';
+      if (!settings.supabaseAnonKey || settings.supabaseAnonKey.includes('undefined') || settings.supabaseAnonKey.length < 10) {
+        settings.supabaseAnonKey = defaultAnonKey;
+        changed = true;
+      }
+      if (changed) {
+        _set(KEYS.SETTINGS, settings);
+        loadSupabaseConfig(); // Reload config after migration
+      }
+    }
 
     // If Supabase is enabled, try pulling initial data
     if (supabaseConfig.enabled) {

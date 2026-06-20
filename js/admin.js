@@ -969,9 +969,9 @@ function renderSettings() {
     'settingWhatsappEnabled': settings.whatsappEnabled !== undefined ? String(settings.whatsappEnabled) : 'true',
     'settingWhatsappNumber': settings.whatsappNumber || '',
     'settingWhatsappMessage': settings.whatsappMessage || 'Hi! I need help with a flight booking on Special Fare.',
-    'settingSupabaseEnabled': settings.supabaseEnabled !== undefined ? String(settings.supabaseEnabled) : 'false',
+    'settingSupabaseEnabled': settings.supabaseEnabled !== false ? 'true' : 'false',
     'settingSupabaseUrl': settings.supabaseUrl || 'https://zhwircmzzbqcqebwkgtc.supabase.co',
-    'settingSupabaseAnonKey': settings.supabaseAnonKey || ''
+    'settingSupabaseAnonKey': settings.supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpod2lyY216emJxY3FlYndrZ3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjU3MDgsImV4cCI6MjA5Njc0MTcwOH0.8v5FReubvXUAjx6mmXsDu1boaaMuYei-g2EqCVIW9Rg'
   };
 
   Object.entries(fields).forEach(([id, val]) => {

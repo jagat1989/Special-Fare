@@ -186,6 +186,15 @@ const Storage = (() => {
             }
           });
 
+          // Re-init WhatsApp widget if settings were pulled
+          if (rows.some(row => row.key === KEYS.SETTINGS) && typeof window.Utils !== 'undefined' && window.Utils.initWhatsAppWidget) {
+            try {
+              window.Utils.initWhatsAppWidget();
+            } catch (err) {
+              console.warn('Failed to re-initialize WhatsApp widget after pull:', err);
+            }
+          }
+
           console.log(`Successfully pulled and merged ${rows.length} keys from Supabase!`);
           window.dispatchEvent(new Event('storage'));
           return true;
@@ -1195,6 +1204,14 @@ const Storage = (() => {
     Object.assign(settings, updates);
     _set(KEYS.SETTINGS, settings);
     loadSupabaseConfig();
+    
+    // Re-init WhatsApp widget after local update
+    if (typeof window.Utils !== 'undefined' && window.Utils.initWhatsAppWidget) {
+      try {
+        window.Utils.initWhatsAppWidget();
+      } catch (err) {}
+    }
+    
     return { success: true, settings };
   }
 

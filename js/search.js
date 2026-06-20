@@ -73,6 +73,9 @@
       if (['skywings_session_customer', 'skywings_session_agent', 'skywings_session_supplier', 'skywings_session_admin'].includes(e.key)) {
         window.location.reload();
       }
+      if (e.key === 'skywings_settings' && typeof Utils !== 'undefined' && Utils.initWhatsAppWidget) {
+        Utils.initWhatsAppWidget();
+      }
     });
   }
 

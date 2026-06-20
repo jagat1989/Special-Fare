@@ -69,6 +69,7 @@
 
     // Real-time synchronization across tabs/windows
     window.addEventListener('storage', function (e) {
+      if (!e.isTrusted) return;
       if (['skywings_session_customer', 'skywings_session_agent', 'skywings_session_supplier', 'skywings_session_admin'].includes(e.key)) {
         window.location.reload();
       }

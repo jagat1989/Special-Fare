@@ -1323,18 +1323,18 @@
           </div>
 
           <div class="settings-section">
-            <div class="settings-section-title">💳 Smepay Payment Gateway Integration</div>
+            <div class="settings-section-title">💳 Razorpay Payment Gateway Integration</div>
             <div class="form-row-2">
               <div class="form-group">
-                <label class="form-label">Enable Smepay Gateway</label>
-                <select id="settingSmepayEnabled" class="form-control">
+                <label class="form-label">Enable Razorpay Gateway</label>
+                <select id="settingRazorpayEnabled" class="form-control">
                   <option value="false">Disabled (Simulated UPI/Card Checkout)</option>
-                  <option value="true">Enabled (Processes via Smepay)</option>
+                  <option value="true">Enabled (Processes via Razorpay)</option>
                 </select>
               </div>
               <div class="form-group">
                 <label class="form-label">Gateway Mode</label>
-                <select id="settingSmepayMode" class="form-control">
+                <select id="settingRazorpayMode" class="form-control">
                   <option value="sandbox">Sandbox (Testing)</option>
                   <option value="live">Live (Production)</option>
                 </select>
@@ -1342,14 +1342,15 @@
             </div>
             <div class="form-row-2">
               <div class="form-group" style="margin-bottom:0">
-                <label class="form-label">Merchant ID</label>
-                <input type="text" id="settingSmepayMerchantId" class="form-control" placeholder="Enter Smepay Merchant ID" />
+                <label class="form-label">Razorpay Key ID</label>
+                <input type="text" id="settingRazorpayKeyId" class="form-control" placeholder="rzp_test_..." />
               </div>
               <div class="form-group" style="margin-bottom:0">
-                <label class="form-label">API Key / Secret Token</label>
-                <input type="password" id="settingSmepayApiKey" class="form-control" placeholder="sme_sk_••••••••••••••••" />
+                <label class="form-label">Razorpay Key Secret</label>
+                <input type="password" id="settingRazorpayKeySecret" class="form-control" placeholder="Secret Key" />
               </div>
             </div>
+          </div>
           <div class="settings-section">
             <div class="settings-section-title">🔌 Supabase Cloud Synchronization</div>
             <div class="form-row-2">
@@ -1853,10 +1854,10 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/data.js?v=1.3.5"></script>
-  <script src="js/storage.js?v=1.3.5"></script>
-  <script src="js/utils.js?v=1.3.5"></script>
-  <script src="js/admin.js?v=1.3.5"></script>
+  <script src="js/data.js?v=1.3.6"></script>
+  <script src="js/storage.js?v=1.3.6"></script>
+  <script src="js/utils.js?v=1.3.6"></script>
+  <script src="js/admin.js?v=1.3.6"></script>
 </body>
 </html>
 

@@ -451,38 +451,38 @@ const BookingFlow = (() => {
     setText('psb-total', Utils.formatCurrency(state.totalFare));
     setText('pay-btn-amount', Utils.formatCurrency(state.totalFare));
 
-    // Smepay payment gateway integration indicator
+    // Razorpay payment gateway integration indicator
     const settings = Storage.getSettings();
-    const isSmepay = settings.smepayEnabled === true;
-    let smepayIndicator = document.getElementById('smepay-indicator-alert');
+    const isRazorpay = settings.razorpayEnabled === true;
+    let razorpayIndicator = document.getElementById('razorpay-indicator-alert');
 
-    if (isSmepay) {
-      if (!smepayIndicator) {
-        smepayIndicator = document.createElement('div');
-        smepayIndicator.id = 'smepay-indicator-alert';
-        smepayIndicator.className = 'alert alert-info';
-        smepayIndicator.style.display = 'flex';
-        smepayIndicator.style.alignItems = 'center';
-        smepayIndicator.style.gap = '10px';
-        smepayIndicator.style.marginBottom = '1.5rem';
-        smepayIndicator.style.background = 'rgba(6, 182, 212, 0.1)';
-        smepayIndicator.style.borderColor = 'rgba(6, 182, 212, 0.2)';
-        smepayIndicator.style.color = '#22d3ee';
+    if (isRazorpay) {
+      if (!razorpayIndicator) {
+        razorpayIndicator = document.createElement('div');
+        razorpayIndicator.id = 'razorpay-indicator-alert';
+        razorpayIndicator.className = 'alert alert-info';
+        razorpayIndicator.style.display = 'flex';
+        razorpayIndicator.style.alignItems = 'center';
+        razorpayIndicator.style.gap = '10px';
+        razorpayIndicator.style.marginBottom = '1.5rem';
+        razorpayIndicator.style.background = 'rgba(6, 182, 212, 0.1)';
+        razorpayIndicator.style.borderColor = 'rgba(6, 182, 212, 0.2)';
+        razorpayIndicator.style.color = '#22d3ee';
         
         const tabsWrap = document.querySelector('.payment-tabs-wrap');
         if (tabsWrap) {
-          tabsWrap.parentNode.insertBefore(smepayIndicator, tabsWrap);
+          tabsWrap.parentNode.insertBefore(razorpayIndicator, tabsWrap);
         }
       }
-      smepayIndicator.innerHTML = `
+      razorpayIndicator.innerHTML = `
         <span style="font-size:1.3rem; flex-shrink:0;">💳</span>
         <div style="font-size:0.88rem; line-height:1.4;">
-          <strong>Smepay Active:</strong> Payments processed securely via Smepay Gateway in <strong>${settings.smepayMode.toUpperCase()}</strong> mode.<br>
-          <span style="font-size:0.75rem; color:rgba(255,255,255,0.6)">Merchant ID: <code>${settings.smepayMerchantId}</code></span>
+          <strong>Razorpay Active:</strong> Payments processed securely via Razorpay Gateway in <strong>${settings.razorpayMode.toUpperCase()}</strong> mode.<br>
+          <span style="font-size:0.75rem; color:rgba(255,255,255,0.6)">Key ID: <code>${settings.razorpayKeyId}</code></span>
         </div>
       `;
     } else {
-      if (smepayIndicator) smepayIndicator.remove();
+      if (razorpayIndicator) razorpayIndicator.remove();
     }
   }
 
@@ -581,7 +581,7 @@ const BookingFlow = (() => {
     if (!validatePayment()) return;
 
     const settings = Storage.getSettings();
-    const isSmepay = settings.smepayEnabled === true;
+    const isRazorpay = settings.razorpayEnabled === true;
 
     // Show spinner
     const spinner = document.getElementById('payment-spinner');
@@ -589,8 +589,8 @@ const BookingFlow = (() => {
       spinner.classList.add('active');
       const textEl = spinner.querySelector('p');
       if (textEl) {
-        if (isSmepay) {
-          textEl.textContent = `Connecting to Smepay Gateway [${settings.smepayMode.toUpperCase()}]...`;
+        if (isRazorpay) {
+          textEl.textContent = `Connecting to Razorpay Gateway [${settings.razorpayMode.toUpperCase()}]...`;
         } else {
           textEl.textContent = 'Processing payment...';
         }

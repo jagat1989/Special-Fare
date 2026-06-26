@@ -454,38 +454,38 @@ const BookingFlow = (() => {
     setText('psb-total', Utils.formatCurrency(state.totalFare));
     setText('pay-btn-amount', Utils.formatCurrency(state.totalFare));
 
-    // Razorpay payment gateway integration indicator
+    // Merchant API Credentials payment gateway indicator
     const settings = Storage.getSettings();
-    const isRazorpay = settings.razorpayEnabled === true;
-    let razorpayIndicator = document.getElementById('razorpay-indicator-alert');
+    const isMerchant = settings.merchantEnabled === true;
+    let merchantIndicator = document.getElementById('merchant-indicator-alert');
 
-    if (isRazorpay) {
-      if (!razorpayIndicator) {
-        razorpayIndicator = document.createElement('div');
-        razorpayIndicator.id = 'razorpay-indicator-alert';
-        razorpayIndicator.className = 'alert alert-info';
-        razorpayIndicator.style.display = 'flex';
-        razorpayIndicator.style.alignItems = 'center';
-        razorpayIndicator.style.gap = '10px';
-        razorpayIndicator.style.marginBottom = '1.5rem';
-        razorpayIndicator.style.background = 'rgba(6, 182, 212, 0.1)';
-        razorpayIndicator.style.borderColor = 'rgba(6, 182, 212, 0.2)';
-        razorpayIndicator.style.color = '#22d3ee';
+    if (isMerchant) {
+      if (!merchantIndicator) {
+        merchantIndicator = document.createElement('div');
+        merchantIndicator.id = 'merchant-indicator-alert';
+        merchantIndicator.className = 'alert alert-info';
+        merchantIndicator.style.display = 'flex';
+        merchantIndicator.style.alignItems = 'center';
+        merchantIndicator.style.gap = '10px';
+        merchantIndicator.style.marginBottom = '1.5rem';
+        merchantIndicator.style.background = 'rgba(6, 182, 212, 0.1)';
+        merchantIndicator.style.borderColor = 'rgba(6, 182, 212, 0.2)';
+        merchantIndicator.style.color = '#22d3ee';
         
         const tabsWrap = document.querySelector('.payment-tabs-wrap');
         if (tabsWrap) {
-          tabsWrap.parentNode.insertBefore(razorpayIndicator, tabsWrap);
+          tabsWrap.parentNode.insertBefore(merchantIndicator, tabsWrap);
         }
       }
-      razorpayIndicator.innerHTML = `
-        <span style="font-size:1.3rem; flex-shrink:0;">💳</span>
+      merchantIndicator.innerHTML = `
+        <span style="font-size:1.3rem; flex-shrink:0;">🔑</span>
         <div style="font-size:0.88rem; line-height:1.4;">
-          <strong>Razorpay Active:</strong> Payments processed securely via Razorpay Gateway in <strong>${settings.razorpayMode.toUpperCase()}</strong> mode.<br>
-          <span style="font-size:0.75rem; color:rgba(255,255,255,0.6)">Key ID: <code>${settings.razorpayKeyId}</code></span>
+          <strong>Merchant API Active:</strong> Payments processed securely via Merchant API in <strong>${settings.merchantMode.toUpperCase()}</strong> mode.<br>
+          <span style="font-size:0.75rem; color:rgba(255,255,255,0.6)">Key ID: <code>${settings.merchantKeyId}</code></span>
         </div>
       `;
     } else {
-      if (razorpayIndicator) razorpayIndicator.remove();
+      if (merchantIndicator) merchantIndicator.remove();
     }
   }
 
@@ -584,7 +584,7 @@ const BookingFlow = (() => {
     if (!validatePayment()) return;
 
     const settings = Storage.getSettings();
-    const isRazorpay = settings.razorpayEnabled === true;
+    const isMerchant = settings.merchantEnabled === true;
 
     // Show spinner
     const spinner = document.getElementById('payment-spinner');
@@ -592,8 +592,8 @@ const BookingFlow = (() => {
       spinner.classList.add('active');
       const textEl = spinner.querySelector('p');
       if (textEl) {
-        if (isRazorpay) {
-          textEl.textContent = `Connecting to Razorpay Gateway [${settings.razorpayMode.toUpperCase()}]...`;
+        if (isMerchant) {
+          textEl.textContent = `Connecting to Merchant API [${settings.merchantMode.toUpperCase()}]...`;
         } else {
           textEl.textContent = 'Processing payment...';
         }

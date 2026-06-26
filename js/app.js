@@ -33,6 +33,16 @@ const App = (() => {
     initCustomerLogin();
     initCustomerRegister();
 
+    // Check if redirecting for login
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'true') {
+      const msg = urlParams.get('msg') || 'Please login to continue.';
+      setTimeout(() => {
+        Utils.showToast(msg, 'warning', 5000);
+        Utils.openModal('customer-login-modal');
+      }, 300);
+    }
+
     // Close autocomplete dropdowns on outside click
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#from-field-wrapper') &&

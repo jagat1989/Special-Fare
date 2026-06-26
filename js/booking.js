@@ -41,6 +41,15 @@ const BookingFlow = (() => {
   // ─────────────────────────────────────────
 
   function init() {
+    // Session Guard: don't allow flight booking without login
+    if (!session && !pnrParam) {
+      Utils.showToast('Please login to book a flight.', 'warning', 5000);
+      setTimeout(() => {
+        window.location.href = 'index.html?login=true&msg=Please%20login%20to%20book%20a%20flight.';
+      }, 1500);
+      return;
+    }
+
     // Hydrate navbar
     renderNavUser();
 

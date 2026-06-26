@@ -31,6 +31,21 @@
   // ── Init ───────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', init);
 
+  window.handleBookClick = function(event, bookUrl) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!Storage.getSession()) {
+      Utils.showToast('Please login to book a flight.', 'warning', 5000);
+      setTimeout(() => {
+        window.location.href = 'index.html?login=true&msg=Please%20login%20to%20book%20a%20flight.';
+      }, 1200);
+      return false;
+    }
+    window.location.href = bookUrl;
+  };
+
   function init() {
     Utils.initNavbar();
     Utils.initHamburger();
@@ -690,7 +705,7 @@
           <div class="card-price-from">from</div>
           <div class="card-price-main">${Utils.formatCurrency(getPrice(flight))}</div>
           <div class="card-price-sub">per passenger</div>
-          <a href="${bookUrl}" class="btn btn-primary btn-sm card-book-btn">Book Now →</a>
+          <a href="#" onclick="handleBookClick(event, '${bookUrl}')" class="btn btn-primary btn-sm card-book-btn">Book Now →</a>
         </div>
       </div>
 
@@ -732,7 +747,7 @@
       const bookUrl = `booking.html?flightId=${encodeURIComponent(flight.id)}&class=${encodeURIComponent(cls.key)}&passengers=${pax}&date=${urlParams.date || flight.date}&from=${encodeURIComponent(flight.origin)}&to=${encodeURIComponent(flight.destination)}`;
 
       return `
-        <button class="fare-class-btn ${isSelected}" onclick="window.location.href='${bookUrl}'">
+        <button class="fare-class-btn ${isSelected}" onclick="handleBookClick(event, '${bookUrl}')">
           <div class="fare-class-name">${cls.icon} ${cls.label}</div>
           <div class="fare-class-price">${Utils.formatCurrency(price)}</div>
           <div class="fare-class-seats ${seatClass}">${seatDot} ${seatText}</div>

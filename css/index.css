@@ -8,9 +8,9 @@
 /* ── CSS Custom Properties (Design Tokens) ── */
 :root {
   /* Background Colors */
-  --bg-primary: #071542;
-  --bg-secondary: #0d236d;
-  --bg-tertiary: #14359c;
+  --bg-primary: #0a1128; /* Premium Navy Blue */
+  --bg-secondary: #101f42;
+  --bg-tertiary: #172d5a;
   --bg-card: rgba(255, 255, 255, 0.04);
   --bg-glass: rgba(255, 255, 255, 0.06);
   --bg-glass-hover: rgba(255, 255, 255, 0.1);

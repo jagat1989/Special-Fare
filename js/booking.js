@@ -67,6 +67,26 @@ const BookingFlow = (() => {
         Utils.showToast('Booking not found for PNR: ' + pnrParam, 'error');
         return;
       }
+
+      // Check for returning payment success/failed query parameter
+      const paymentStatus = params.payment_status || null;
+      if (paymentStatus === 'success') {
+        if (booking.status === 'pending_payment') {
+          // Update status to confirmed
+          Storage.updateBookingStatus(booking.id, 'confirmed');
+          booking.status = 'confirmed';
+          
+          // Send confirmation email
+          sendConfirmationEmail(booking);
+          
+          Utils.showToast('🎉 Payment Successful! Booking confirmed! PNR: ' + booking.pnr, 'success', 8000);
+        } else {
+          Utils.showToast('Booking details for PNR: ' + booking.pnr, 'info');
+        }
+      } else if (paymentStatus === 'failed') {
+        Utils.showToast('❌ Payment failed or cancelled. Please search and try booking again.', 'error', 8000);
+      }
+
       state.confirmedBooking = booking;
       // hide stepper
       document.getElementById('booking-stepper').style.display = 'none';
@@ -609,22 +629,34 @@ const BookingFlow = (() => {
       }
     }
 
-    // Simulate 2.5 second payment processing
-    setTimeout(() => {
-      if (spinner) {
-        spinner.classList.remove('active');
-        const textEl = spinner.querySelector('p');
-        if (textEl) textEl.textContent = 'Processing payment...';
-      }
-      createBooking();
-    }, 2500);
+    if (isMerchant) {
+      // Create pending booking and redirect to checkout page after 1.5s
+      setTimeout(() => {
+        const booking = createBookingRecord(true);
+        if (booking) {
+          window.location.href = `checkout.html?pnr=${booking.pnr}`;
+        } else {
+          if (spinner) spinner.classList.remove('active');
+        }
+      }, 1500);
+    } else {
+      // Simulate 2.5 second payment processing for local simulated checkouts
+      setTimeout(() => {
+        if (spinner) {
+          spinner.classList.remove('active');
+          const textEl = spinner.querySelector('p');
+          if (textEl) textEl.textContent = 'Processing payment...';
+        }
+        createBookingRecord(false);
+      }, 2500);
+    }
   }
 
   // ─────────────────────────────────────────
   //  Create Booking
   // ─────────────────────────────────────────
 
-  function createBooking() {
+  function createBookingRecord(isPending) {
     const f = state.flight;
     const fs = state.fareSummary;
 
@@ -655,14 +687,21 @@ const BookingFlow = (() => {
       paymentMethod: state.paymentMethod,
       meal: state.meal,
       extraBaggage: state.baggage,
-      seatNumbers: state.selectedSeats
+      seatNumbers: state.selectedSeats,
+      contactEmail: state.contact ? state.contact.email : '',
+      contactPhone: state.contact ? state.contact.phone : '',
+      status: isPending ? 'pending_payment' : 'confirmed'
     };
 
     const result = Storage.createBooking(bookingData);
 
     if (!result.success) {
       Utils.showToast('Booking failed: ' + (result.error || 'Unknown error'), 'error');
-      return;
+      return null;
+    }
+
+    if (isPending) {
+      return result.booking;
     }
 
     state.confirmedBooking = result.booking;
@@ -671,9 +710,15 @@ const BookingFlow = (() => {
     goToStep(5);
 
     // Send confirmation email
+    sendConfirmationEmail(result.booking);
+
+    return result.booking;
+  }
+
+  function sendConfirmationEmail(booking) {
     try {
-      const ticketUrl = `${window.location.origin}${window.location.pathname}?pnr=${result.booking.pnr}`;
-      const pnames = result.booking.passengers.map(p => {
+      const ticketUrl = `${window.location.origin}${window.location.pathname}?pnr=${booking.pnr}`;
+      const pnames = booking.passengers.map(p => {
         let seatInfo = p.seat ? `, Seat: ${p.seat}` : '';
         return `${p.name} (Age: ${p.age}, Gender: ${p.gender}${seatInfo})`;
       }).join('<br>');
@@ -682,7 +727,7 @@ const BookingFlow = (() => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
           <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; padding: 24px; text-align: center;">
             <h2 style="margin: 0; font-size: 24px;">Flight Booking Confirmed!</h2>
-            <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Booking Confirmed — PNR: <strong>${result.booking.pnr}</strong></p>
+            <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Booking Confirmed — PNR: <strong>${booking.pnr}</strong></p>
           </div>
           <div style="padding: 24px; color: #333; line-height: 1.6;">
             <p>Dear Customer,</p>
@@ -690,12 +735,12 @@ const BookingFlow = (() => {
             
             <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">✈ FLIGHT INFORMATION</h4>
             <table cellpadding="6" cellspacing="0" style="width: 100%; font-size: 14px;">
-              <tr style="background: #f9fafb;"><td><strong>Flight Number</strong></td><td>${result.booking.airlineName} (${result.booking.flightNumber})</td></tr>
-              <tr><td><strong>Route</strong></td><td>${result.booking.origin} → ${result.booking.destination}</td></tr>
-              <tr style="background: #f9fafb;"><td><strong>Date</strong></td><td>${Utils.formatDate(result.booking.date)}</td></tr>
-              <tr><td><strong>Departure</strong></td><td>${result.booking.departureTime}</td></tr>
-              <tr style="background: #f9fafb;"><td><strong>Arrival</strong></td><td>${result.booking.arrivalTime}</td></tr>
-              <tr><td><strong>Class</strong></td><td>${Utils.formatClass(result.booking.fareClass)}</td></tr>
+              <tr style="background: #f9fafb;"><td><strong>Flight Number</strong></td><td>${booking.airlineName} (${booking.flightNumber})</td></tr>
+              <tr><td><strong>Route</strong></td><td>${booking.origin} → ${booking.destination}</td></tr>
+              <tr style="background: #f9fafb;"><td><strong>Date</strong></td><td>${Utils.formatDate(booking.date)}</td></tr>
+              <tr><td><strong>Departure</strong></td><td>${booking.departureTime}</td></tr>
+              <tr style="background: #f9fafb;"><td><strong>Arrival</strong></td><td>${booking.arrivalTime}</td></tr>
+              <tr><td><strong>Class</strong></td><td>${Utils.formatClass(booking.fareClass)}</td></tr>
             </table>
             
             <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">👥 PASSENGERS</h4>
@@ -705,13 +750,13 @@ const BookingFlow = (() => {
             
             <h4 style="border-bottom: 2px solid #0ea5e9; padding-bottom: 6px; color: #1e3a8a; margin-top: 24px; margin-bottom: 10px;">💳 FARE SUMMARY</h4>
             <table cellpadding="6" cellspacing="0" style="width: 100%; font-size: 14px;">
-              <tr style="background: #f9fafb;"><td>Base Fare</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.baseFare)}</td></tr>
-              <tr><td>Taxes & GST</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.taxes)}</td></tr>
-              <tr style="background: #f9fafb;"><td>Convenience Fee</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.convenienceFee)}</td></tr>
-              ${result.booking.agentMarkup ? `<tr><td>Agent Markup</td><td style="text-align: right;">${Utils.formatCurrency(result.booking.agentMarkup)}</td></tr>` : ''}
+              <tr style="background: #f9fafb;"><td>Base Fare</td><td style="text-align: right;">${Utils.formatCurrency(booking.baseFare)}</td></tr>
+              <tr><td>Taxes & GST</td><td style="text-align: right;">${Utils.formatCurrency(booking.taxes)}</td></tr>
+              <tr style="background: #f9fafb;"><td>Convenience Fee</td><td style="text-align: right;">${Utils.formatCurrency(booking.convenienceFee)}</td></tr>
+              ${booking.agentMarkup ? `<tr><td>Agent Markup</td><td style="text-align: right;">${Utils.formatCurrency(booking.agentMarkup)}</td></tr>` : ''}
               <tr style="font-weight: bold; border-top: 2px solid #0ea5e9;">
                 <td style="padding-top: 10px;">Total Paid</td>
-                <td style="text-align: right; color: #2563eb; font-size: 16px; padding-top: 10px;">${Utils.formatCurrency(result.booking.totalFare)}</td>
+                <td style="text-align: right; color: #2563eb; font-size: 16px; padding-top: 10px;">${Utils.formatCurrency(booking.totalFare)}</td>
               </tr>
             </table>
             
@@ -727,21 +772,22 @@ const BookingFlow = (() => {
       `;
 
       // 1. Send email to B2C customer/passenger contact email
-      if (state.contact && state.contact.email) {
+      const toEmail = booking.contactEmail || '';
+      if (toEmail) {
         Utils.sendEmail({
-          to: state.contact.email,
-          subject: `Booking Confirmed - PNR: ${result.booking.pnr} - Special Fare`,
+          to: toEmail,
+          subject: `Booking Confirmed - PNR: ${booking.pnr} - Special Fare`,
           body: emailBody
         });
       }
 
       // 2. Send email copy to B2B Agent if booked by an agent
-      if (result.booking.agentId) {
-        const agent = Storage.getAgent(result.booking.agentId);
-        if (agent && agent.email && (!state.contact || agent.email !== state.contact.email)) {
+      if (booking.agentId) {
+        const agent = Storage.getAgent(booking.agentId);
+        if (agent && agent.email && agent.email !== toEmail) {
           Utils.sendEmail({
             to: agent.email,
-            subject: `B2B Booking Confirmed - PNR: ${result.booking.pnr} - Special Fare`,
+            subject: `B2B Booking Confirmed - PNR: ${booking.pnr} - Special Fare`,
             body: emailBody.replace('Dear Customer', `Dear Partner (${agent.agencyName})`)
           });
         }

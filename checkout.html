@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Checkout — Special Fare Gateway</title>
+  <link rel="stylesheet" href="css/index.css?v=1.4.0" />
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 50%, #0c1020 0%, #030408 100%);
+      color: #f3f4f6;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .checkout-container {
+      width: 100%;
+      max-width: 580px;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .checkout-card {
+      background: rgba(13, 18, 36, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .checkout-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #0ea5e9, #6366f1);
+    }
+
+    .gateway-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 20px;
+    }
+
+    .gateway-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gateway-badge {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #22d3ee;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .booking-summary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-label {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .summary-value {
+      font-weight: 600;
+    }
+
+    .total-row {
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      margin-top: 12px;
+      padding-top: 12px;
+      font-size: 1.1rem;
+    }
+
+    .total-amount {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .merchant-info {
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .merchant-info div {
+      margin-bottom: 4px;
+    }
+
+    .merchant-info div:last-child {
+      margin-bottom: 0;
+    }
+
+    .payment-options {
+      margin-bottom: 24px;
+    }
+
+    .option-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .pay-tab {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.85rem;
+    }
+
+    .pay-tab:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .pay-tab.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: #6366f1;
+      color: #a5b4fc;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+    }
+
+    .pay-tab-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .payment-details-form {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      min-height: 120px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 6px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: center;
+      border: none;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    /* ── Progress/Spinner Overlay ── */
+    .payment-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #03050c;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .payment-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 24px;
+    }
+
+    .overlay-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .progress-steps {
+      width: 100%;
+      max-width: 320px;
+      margin-top: 15px;
+      text-align: left;
+    }
+
+    .step-log {
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-log.success {
+      color: #34d399;
+    }
+
+    .step-log.current {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .step-log.current::before {
+      content: '●';
+      animation: blink 1s infinite;
+    }
+
+    .step-log.success::before {
+      content: '✓';
+    }
+
+    .step-log.pending::before {
+      content: '○';
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.3; }
+    }
+
+    /* UPI QR Display */
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .qr-box {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="checkout-container">
+    <div class="checkout-card" id="card-wrapper">
+      
+      <!-- Loading Overlay -->
+      <div class="payment-overlay" id="payment-overlay">
+        <div class="spinner"></div>
+        <div class="overlay-title" id="overlay-title">Processing Secure Payment</div>
+        <div class="progress-steps" id="progress-steps">
+          <div class="step-log" id="step-log-1">Connecting to Gateway Server...</div>
+          <div class="step-log" id="step-log-2">Verifying secret HMAC key signature...</div>
+          <div class="step-log" id="step-log-3">Authorizing account balance...</div>
+          <div class="step-log" id="step-log-4">Dispatching secure webhook to server...</div>
+          <div class="step-log" id="step-log-5">Payment authorization successful!</div>
+        </div>
+      </div>
+
+      <!-- Main Payment screen -->
+      <div class="gateway-header">
+        <div class="gateway-title">
+          <span>🛡️</span> Special Fare Payment Gateway
+        </div>
+        <div class="gateway-badge" id="gateway-mode">SANDBOX</div>
+      </div>
+
+      <!-- Booking details summary -->
+      <div class="booking-summary">
+        <div class="summary-row">
+          <span class="summary-label">Flight PNR</span>
+          <span class="summary-value" id="summary-pnr">-</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Route</span>
+          <span class="summary-value" id="summary-route">-</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Passengers</span>
+          <span class="summary-value" id="summary-passengers">-</span>
+        </div>
+        <div class="summary-row total-row">
+          <span class="summary-label" style="font-weight: 600; color: #fff;">Amount Payable</span>
+          <span class="total-amount" id="summary-amount">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Merchant details -->
+      <div class="merchant-info">
+        <div style="font-weight: 700; color: #fff; margin-bottom: 6px;">📋 Merchant API Details</div>
+        <div><strong>Key ID:</strong> <code id="merchant-key">-</code></div>
+        <div><strong>Webhook Secret:</strong> <code id="merchant-webhook">-</code></div>
+        <div><strong>Gateway Mode:</strong> <span id="merchant-mode">-</span></div>
+      </div>
+
+      <!-- Method Selector -->
+      <div class="payment-options">
+        <div class="option-title">Select Payment Mode</div>
+        <div class="payment-grid">
+          <div class="pay-tab active" onclick="switchMethod('upi')">
+            <span class="pay-tab-icon">📱</span>
+            <span>UPI / QR</span>
+          </div>
+          <div class="pay-tab" onclick="switchMethod('card')">
+            <span class="pay-tab-icon">💳</span>
+            <span>Card</span>
+          </div>
+          <div class="pay-tab" onclick="switchMethod('netbanking')">
+            <span class="pay-tab-icon">🏦</span>
+            <span>Net Banking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method Form content -->
+      <div class="payment-details-form" id="form-container">
+        <!-- Will be dynamically filled -->
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="cancelPayment()">Cancel Payment</button>
+        <button class="btn btn-primary" onclick="startSecurePayment()">Authorize Pay</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js?v=1.4.0"></script>
+  <script src="js/storage.js?v=1.4.0"></script>
+  <script src="js/utils.js?v=1.4.0"></script>
+  <script>
+    // State & Params
+    const params = Utils.getUrlParams();
+    const pnr = params.pnr || null;
+    let selectedMethod = 'upi';
+    let booking = null;
+
+    // Initialize
+    window.onload = function() {
+      if (!pnr) {
+        alert('Missing PNR parameter. Cannot complete checkout.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      booking = Storage.getBooking(pnr);
+      if (!booking) {
+        alert('Booking record not found for PNR: ' + pnr);
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const settings = Storage.getSettings();
+
+      // Render summary info
+      document.getElementById('summary-pnr').textContent = booking.pnr;
+      document.getElementById('summary-route').textContent = `${booking.origin} → ${booking.destination}`;
+      document.getElementById('summary-passengers').textContent = `${booking.passengers.length} Passenger(s)`;
+      document.getElementById('summary-amount').textContent = Utils.formatCurrency(booking.totalFare);
+
+      // Render Merchant API Configuration
+      document.getElementById('gateway-mode').textContent = (settings.merchantMode || 'sandbox').toUpperCase();
+      document.getElementById('merchant-key').textContent = settings.merchantKeyId || 'Not Configured';
+      document.getElementById('merchant-webhook').textContent = settings.merchantWebhookSecret ? '••••••••••••••••' : 'Not Configured';
+      document.getElementById('merchant-mode').textContent = (settings.merchantMode || 'sandbox').toUpperCase();
+
+      // Populate default payment form
+      switchMethod('upi');
+    };
+
+    // Render forms
+    function switchMethod(method) {
+      selectedMethod = method;
+      const tabs = document.querySelectorAll('.pay-tab');
+      tabs.forEach((tab, index) => {
+        const tabMethod = ['upi', 'card', 'netbanking'][index];
+        if (tabMethod === method) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      const container = document.getElementById('form-container');
+      if (method === 'upi') {
+        container.innerHTML = `
+          <div class="qr-container">
+            <div style="font-size:0.85rem; color:rgba(255,255,255,0.7); text-align:center;">Scan this secure QR code using GPay, PhonePe, or Paytm</div>
+            <div class="qr-box">
+              <svg width="110" height="110" viewBox="0 0 29 29" style="display:block;">
+                <path d="M0 0h7v7H0zm1 1v5h5V1zm8 0h3v1h1V1h2v1h1V1h4v7h-1V7h-1v1h-3V6h-1v2H9zm1 1v1h1V2zm3 0h1v1h-1zm3 0h1v1h-1zm-6 2h1v1h-1zm3 0h1v1h-1zm-9 4h7v7H0zm1 1v5h5v-5zm18-5h3v2h-1v1h1v4h-3zm1 1v1h1v-1zm1 2h1v1h-1zm-11 1h1v1h-1zm2 0h1v1h-1zm5 0h1v1h-1zm-7 1h1v1h-1zm-4 1h1v1h-1zm9 0h1v1h-1zm2 0h1v1h-1zm1 1h1v1h-1zm-4 1h1v1h-1zm2 0h1v1h-1zm1 0h1v1h-1zm-12 1h1v1h-1zm2 0h1v1h-1zm3 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1zm2 0h1v1h-1z" fill="#000"/>
+              </svg>
+            </div>
+            <div class="form-group" style="width: 100%; margin-top: 10px;">
+              <label class="form-label">Or enter UPI ID</label>
+              <input type="text" id="upi-id" class="form-control" placeholder="username@upi" value="specialfare@okaxis" />
+            </div>
+          </div>
+        `;
+      } else if (method === 'card') {
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Card Number</label>
+            <input type="text" class="form-control" placeholder="4111 2222 3333 4444" value="4111 2222 3333 4444" />
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Expiry (MM/YY)</label>
+              <input type="text" class="form-control" placeholder="12/28" value="12/28" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV / CVC</label>
+              <input type="password" class="form-control" placeholder="•••" value="123" />
+            </div>
+          </div>
+        `;
+      } else if (method === 'netbanking') {
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Choose Bank</label>
+            <select class="form-control">
+              <option value="sbi">State Bank of India</option>
+              <option value="hdfc">HDFC Bank</option>
+              <option value="icici">ICICI Bank</option>
+              <option value="axis" selected>Axis Bank</option>
+              <option value="kotak">Kotak Mahindra Bank</option>
+            </select>
+          </div>
+        `;
+      }
+    }
+
+    // Cancel flow
+    function cancelPayment() {
+      if (confirm('Are you sure you want to cancel the payment process?')) {
+        window.location.href = `booking.html?pnr=${booking.pnr}&payment_status=failed`;
+      }
+    }
+
+    // Process & animate
+    function startSecurePayment() {
+      const overlay = document.getElementById('payment-overlay');
+      overlay.classList.add('active');
+
+      const logs = [
+        document.getElementById('step-log-1'),
+        document.getElementById('step-log-2'),
+        document.getElementById('step-log-3'),
+        document.getElementById('step-log-4'),
+        document.getElementById('step-log-5')
+      ];
+
+      // Reset logs classes
+      logs.forEach(l => l.className = 'step-log pending');
+      
+      // Step 1: Connecting
+      setTimeout(() => {
+        logs[0].className = 'step-log success';
+        logs[1].className = 'step-log current';
+      }, 800);
+
+      // Step 2: Verification
+      setTimeout(() => {
+        logs[1].className = 'step-log success';
+        logs[2].className = 'step-log current';
+      }, 1600);
+
+      // Step 3: Authorization
+      setTimeout(() => {
+        logs[2].className = 'step-log success';
+        logs[3].className = 'step-log current';
+      }, 2400);
+
+      // Step 4: Webhook Dispatch
+      setTimeout(() => {
+        logs[3].className = 'step-log success';
+        logs[4].className = 'step-log current';
+      }, 3200);
+
+      // Step 5: Complete
+      setTimeout(() => {
+        logs[4].className = 'step-log success';
+        document.getElementById('overlay-title').innerHTML = '<span style="color:#10b981;">🎉 Checkout Verified Successfully!</span>';
+      }, 4000);
+
+      // Redirect back with Success callback parameter
+      setTimeout(() => {
+        window.location.href = `booking.html?pnr=${booking.pnr}&payment_status=success`;
+      }, 4800);
+    }
+  </script>
+</body>
+</html>
